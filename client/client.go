@@ -52,7 +52,7 @@ const (
 func init() {
 	flag.BoolVar(&DeepScan, "deep", false, "Scan deeply by checking each process' memory")
 	flag.IntVar(&ProcessID, "pid", 0, "Use a specific process")
-	flag.BoolVar(&Verbose, "verbose", true, "Enable debug messages")
+	flag.BoolVar(&Verbose, "verbose", false, "Enable debug messages")
 	flag.StringVar(&SongsPath, "hash", "", "When provided with the directory to 'Songs/', will scan every song in the folder")
 
 	flag.StringVar(&Server, "server", "http://localhost:8080", "The server to connect to")
