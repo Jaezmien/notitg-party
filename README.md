@@ -2,9 +2,17 @@
   
 # NotITG Party
 
+<a href="#">
+  <img src="https://img.shields.io/badge/version-pre--alpha-red">  
+</a>
+
 > forcefully shoving online multiplayer into a single player game
 
 </div>
+
+# Warning
+
+**This code is extremely pre-alpha, expect things breaking!**
 
 # Server
 
