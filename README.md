@@ -46,7 +46,7 @@ $ go run . --username="Your Username" --server="http://your.server:8080"
 | `pid` | No | `0` | Use a specific process |
 | `verbose` | No | `false` | Enable debug messages |
 | `hash` | Once | `""` | When provided with the directory to 'Songs/', will scan every song in the folder |
-| `server` | Maybe | `https://localhost:8080` | The server to connect to |
+| `server` | Maybe | `http://localhost:8080` | The server to connect to |
 | `username` | Yes | `""` | Your username |
 
 ## Notes
@@ -57,6 +57,6 @@ $ go run . --username="Your Username" --server="http://your.server:8080"
 
 ## Note
 
-If your NotITG default theme folder isn't `simply-love-notitg`, please go to [metrics.ini](./metrics.ini) and change `Global.FallbackTheme` to your folder's name.
+If your NotITG default theme folder isn't `simply-love-notitg`, please go to [metrics.ini](./theme/metrics.ini) and change `Global.FallbackTheme` to your folder's name.
 
 This theme contains only the necessary files, and falls back on the default theme for a majority of its content.
