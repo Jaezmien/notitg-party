@@ -22,6 +22,11 @@
 				PARTY_CMD.screen = screen
 			end
 		end"
+		SaltyResetMessageCommand="%function(self)
+			-- bad
+			Lemonade:Send(2, {2, 1})
+			SCREENMAN:SetNewScreen('ScreenPartyLobby')
+		end"
 	><children>
 		<Layer
 			Type="ActorFrame"
