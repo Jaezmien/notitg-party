@@ -86,8 +86,14 @@
 							n:diffuse(1,1,0,1)
 							sc:diffuse(1,1,0,1)
 						else
-							n:diffuse(1,1,1,1)
-							sc:diffuse(1,1,1,1)
+							local u = PARTY_CMD:GetOwnUser()
+							if u and u.id == v.id then
+								n:diffuse(0,1,0,1)
+								sc:diffuse(0,1,0,1)
+							else
+								n:diffuse(1,1,1,1)
+								sc:diffuse(1,1,1,1)
+							end
 						end
 
 						n:x(5 + x)
