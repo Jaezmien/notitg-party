@@ -1,0 +1,56 @@
+<Layer
+	Type="ActorFrame"
+	Condition="(function()
+		if Lemonade.Loader then return true end
+
+		Lemonade.Loader = {}
+		Lemonade.Loader.Files = { GAMESTATE:GetFileStructure('/Themes/' .. THEME:GetCurThemeName() .. '/Screens/Overlay/LemonScripts/') }
+		for i=table.getn(Lemonade.Loader.Files), 1, -1 do
+			if string.sub(Lemonade.Loader.Files[i], -4) ~= '.xml' then table.remove( Lemonade.Loader.Files, i ) end
+		end
+
+		if table.getn( Lemonade.Loader.Files ) == 0 then return false end
+
+		Lemonade.Loader.i = 1
+		Lemonade.Loader.n = table.getn( Lemonade.Loader.Files )
+		Lemonade.Loader.m = math.log10( Lemonade.Loader.n )
+		function Lemonade.Loader.Condition()
+			return Lemonade.Loader.i <= Lemonade.Loader.n
+		end
+		function Lemonade.Loader.Recursion()
+			return Lemonade.Loader.Condition() and Lemonade.Loader.i <= Lemonade.Loader.m
+		end
+		function Lemonade.Loader.File()
+			local f = Lemonade.Loader.Files[ Lemonade.Loader.i ]
+
+			print(string.format('Loading Lemon Script: %s', f))
+
+			Lemonade.Loader.i = Lemonade.Loader.i + 1
+			return 'LemonScripts/' .. f
+		end
+
+		return true
+	end)()"
+><children>
+
+	<Layer Condition="Lemonade.Loader.Condition()" File="@Lemonade.Loader.File()"/>
+	<Layer Condition="Lemonade.Loader.Condition()" File="@Lemonade.Loader.File()"/>
+	<Layer Condition="Lemonade.Loader.Condition()" File="@Lemonade.Loader.File()"/>
+	<Layer Condition="Lemonade.Loader.Condition()" File="@Lemonade.Loader.File()"/>
+	<Layer Condition="Lemonade.Loader.Condition()" File="@Lemonade.Loader.File()"/>
+	<Layer Condition="Lemonade.Loader.Condition()" File="@Lemonade.Loader.File()"/>
+	<Layer Condition="Lemonade.Loader.Condition()" File="@Lemonade.Loader.File()"/>
+	<Layer Condition="Lemonade.Loader.Condition()" File="@Lemonade.Loader.File()"/>
+	<Layer Condition="Lemonade.Loader.Condition()" File="@Lemonade.Loader.File()"/>
+
+	<Layer Condition="Lemonade.Loader.Recursion()" File="Lemonade.Loader.xml"/>
+	<Layer Condition="Lemonade.Loader.Recursion()" File="Lemonade.Loader.xml"/>
+	<Layer Condition="Lemonade.Loader.Recursion()" File="Lemonade.Loader.xml"/>
+	<Layer Condition="Lemonade.Loader.Recursion()" File="Lemonade.Loader.xml"/>
+	<Layer Condition="Lemonade.Loader.Recursion()" File="Lemonade.Loader.xml"/>
+	<Layer Condition="Lemonade.Loader.Recursion()" File="Lemonade.Loader.xml"/>
+	<Layer Condition="Lemonade.Loader.Recursion()" File="Lemonade.Loader.xml"/>
+	<Layer Condition="Lemonade.Loader.Recursion()" File="Lemonade.Loader.xml"/>
+	<Layer Condition="Lemonade.Loader.Recursion()" File="Lemonade.Loader.xml"/>
+
+</children></Layer>

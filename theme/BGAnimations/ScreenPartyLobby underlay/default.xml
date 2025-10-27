@@ -1,0 +1,107 @@
+<ActorFrame
+	InitCommand="%function(self)
+		Lemonade:Send(2, {2, 1}) -- Let's report to the client that we are in the room screen
+ 
+		PARTY_CMD.lobbySelection = 0
+
+		PARTY_CMD.renderLobbyRooms = function(a)
+			local t = a('Text')	
+			local y = 0
+			local m = PARTY_CMD.lobbyRooms
+
+			if PARTY_CMD.lobbySelection > table.getn(m) then
+				PARTY_CMD.lobbySelection = table.getn(m)
+			end
+
+			for i,v in pairs(m) do
+				local isInGame = v.state == PARTY_CMD.ROOM_PLAYING
+				if isInGame then
+					t:diffuse(0.5,0.5,0.5,1)
+				else
+					t:diffuse(1,1,1,1)
+				end
+
+				t:diffusealpha(i==PARTY_CMD.lobbySelection and 1 or 0.5)
+
+				t:zoom(0.3)
+				t:horizalign('left')
+				t:settext(v.title .. (isInGame and ' [Ongoing]' or ''))
+				t:y(y)
+				t:Draw()
+
+				t:zoom(0.2)
+				t:horizalign('left')
+				t:settext('Players: '.. table.getn(v.players))	
+				t:y(y + 20)
+				t:Draw()
+
+				y = y + 50
+				t:y(y)
+			end
+		end
+	end"
+	StepP1LeftPressMessageCommand="%function(self)
+		-- Send to the client that we've left the lobby via previous screen
+		-- Lemonade:Send(2, {1, 1})
+		-- SCREENMAN:SetNewScreen('ScreenTitleMenu')
+
+		-- Screw this, just exit via the back button
+	end"
+	StepP1DownPressMessageCommand="%function(self)
+		local max = table.getn(PARTY_CMD.lobbyRooms)
+		PARTY_CMD.lobbySelection = PARTY_CMD.lobbySelection + 1 
+		if PARTY_CMD.lobbySelection > max then
+			PARTY_CMD.lobbySelection = 0
+		end
+
+		self('CreateRoom'):diffusealpha(PARTY_CMD.lobbySelection == 0 and 1 or 0.5)
+	end"
+	StepP1UpPressMessageCommand="%function(self)
+		local max = table.getn(PARTY_CMD.lobbyRooms)
+		PARTY_CMD.lobbySelection = PARTY_CMD.lobbySelection - 1
+		if PARTY_CMD.lobbySelection < 0 then
+			PARTY_CMD.lobbySelection = max
+		end
+
+		self('CreateRoom'):diffusealpha(PARTY_CMD.lobbySelection == 0 and 1 or 0.5)
+	end"
+	StepP1MenuStartPressMessageCommand="%function(self)
+		-- HACK: For some reason, this gets called a bajillion times
+		-- So, we're running a queuecommand, and we reset it every time this MessageCommand gets called
+		self:stoptweening()
+		self:sleep(0.02)
+		self:queuecommand('Debounce')
+	end"
+	DebounceCommand="%function(self)
+		if PARTY_CMD.lobbySelection == 0 then
+			-- Create room
+			PARTY_CMD:CreateRoom()
+		else
+			-- Join room by id
+			local room = PARTY_CMD.lobbyRooms[ PARTY_CMD.lobbySelection ]
+			PARTY_CMD:JoinRoom(room.id)
+		end
+	end"
+><children>
+	<Layer
+		Type="ActorFrame"
+		InitCommand="xy,20,60"
+		OnCommand="%function(self)
+			self:SetDrawFunction(PARTY_CMD.renderLobbyRooms)
+		end"
+	><children>
+		<Layer
+			Type="BitmapText"
+			Font="_wendy white"
+			Name="Text"
+		/>
+	</children></Layer>
+
+	<Layer
+		Type="BitmapText"
+		Font="_wendy white"
+		Text="Create Room"
+		Name="CreateRoom"
+		OnCommand="xy,SCREEN_CENTER_X,SCREEN_HEIGHT-60;zoom,0.5"
+	/>
+</children></ActorFrame>

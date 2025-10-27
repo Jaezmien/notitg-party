@@ -1,0 +1,242 @@
+<ActorFrame> <children>
+	<Layer
+		Type="ActorFrame"
+		Condition="GAMESTATE:IsPlayerEnabled(PLAYER_1)"
+		InitCommand="x,45;y,229"
+	><children>
+
+	</children></Layer>
+	<Layer
+		Type="ActorFrame"
+		OldCondition="GAMESTATE:IsPlayerEnabled(PLAYER_2)"
+		Condition="false"
+		InitCommand="x,276;y,366"
+	><children>
+
+
+	</children></Layer>
+	<Layer 
+		Type="Quad"
+		OnCommand="diffuse,#1E282F;stretchto,SCREEN_CENTER_X-139,41,SCREEN_CENTER_X+139,61;diffusealpha,0.85"
+	/>
+
+	<Layer 
+		Condition="SongOptionsLabel() ~= ''"
+		Type="Quad"
+		OnCommand="diffuse,#1E282F;stretchto,SCREEN_CENTER_X-139,153,SCREEN_CENTER_X+139,170;diffusealpha,0.85"
+	/>	
+	<Layer Type="ActorFrame"
+		Condition="not (GAMESTATE:GetCurrentSong() == SONGMAN:FindSong('In The Groove/Training1/'))"
+		OnCommand="x,SCREEN_CENTER_X;y,SCREEN_TOP+68"
+		> <children>
+
+		<Layer
+			Type="BitmapText"
+			Font="_misobold small"
+			OnCommand="shadowlength,1;maxwidth,500;y,-24;zoom,.55;diffuse,#FFFFFF"
+			InitCommand="animate,0;queuecommand,Update"
+			CurrentSongChangedMessageCommand="queuecommand,Update"
+			UpdateCommand="%function(self) self:settext(GetSongName()) end"
+		/>
+		<Layer 
+			Type="BitmapText"
+			Font="_misobold small"
+			OnCommand="y,87;zoom,.5;shadowlength,1;diffuse,#FFFFFF"
+			InitCommand="animate,0;playcommand,Update"
+			UpdateCommand="%function(self) SongOptionsLabel(self) end"
+		/>
+	</children> </Layer>
+
+	<Layer Type="ActorFrame"
+		Condition="GAMESTATE:IsPlayerEnabled(PLAYER_1)"
+		OnCommand="x,SCREEN_CENTER_X-295;y,SCREEN_CENTER_Y-76"
+	> <children>
+		<Actor
+			File="@THEME:GetPath(EC_GRAPHICS,'','_difficulty icons')"
+			InitCommand="%function(self) self:y(IconY()) IconCrop(self) end"
+			OnCommand="animate,0;playcommand,Update"
+			UpdateCommand="%function(self,parent) SetDifficultyFrameFromGameState(self, PLAYER_1) end"
+		/>
+		<Actor
+			Class="DifficultyMeter"
+			Type="ScreenGameplay DifficultyMeterP1"
+			OnCommand="playcommand,Update"
+			UpdateCommand="%function(self) 
+					if GAMESTATE:GetCurrentTrail(PLAYER_1) then 
+						self:SetFromTrail(GAMESTATE:GetCurrentTrail(PLAYER_1)) 
+					else
+						self:SetFromSteps(GAMESTATE:GetCurrentSteps(PLAYER_1))
+					end
+					P1Difficulty = self:GetChild('Difficulty'):GetText()
+				end"
+		/>
+		<Layer 
+			Font="_misobold small"
+			Text="???" 
+			OnCommand="x,25;y,2;zoom,0.4;shadowlength,0;horizalign,left;maxwidth,240;queuecommand,Set" 
+			SetCommand="%function(self) self:settext(P1Difficulty) end" 
+		/>		
+		<Layer 
+			Condition="not GAMESTATE:IsCourseMode()"
+			Font="_misobold small"
+			Text="???" 
+			OnCommand="x,25;y,-12;zoom,0.4;shadowlength,0;horizalign,left;maxwidth,240;queuecommand,Set" 
+			SetCommand="%function(self) self:settext(GetStepsDescriptionText(PLAYER_1)) end" 
+		/>		
+	</children> </Layer>
+
+	<Layer Type="ActorFrame"
+		OldCondition="GAMESTATE:IsPlayerEnabled(PLAYER_2)"
+		Conditon="false"
+		OnCommand="x,SCREEN_CENTER_X+295;y,SCREEN_CENTER_Y-76"
+	> <children>
+		<Actor
+			File="@THEME:GetPath(EC_GRAPHICS,'','_difficulty icons')"
+			InitCommand="%function(self) self:y(IconY()) IconCrop(self) end"
+			OnCommand="animate,0;playcommand,Update"
+			UpdateCommand="%function(self,parent) SetDifficultyFrameFromGameState(self, PLAYER_2) end"
+		/>
+		<Actor
+			Class="DifficultyMeter"
+			Type="ScreenGameplay DifficultyMeterP2"
+			OnCommand="playcommand,Update"
+			UpdateCommand="%function(self) 
+					if GAMESTATE:GetCurrentTrail(PLAYER_2) then 
+						self:SetFromTrail(GAMESTATE:GetCurrentTrail(PLAYER_2)) 
+					else
+						self:SetFromSteps(GAMESTATE:GetCurrentSteps(PLAYER_2))
+					end
+					P2Difficulty = self:GetChild('Difficulty'):GetText()
+				end"
+		/>
+		<Layer 
+			Font="_misobold small"
+			Text="???" 
+			OnCommand="x,-25;y,2;zoom,0.4;shadowlength,0;horizalign,right;maxwidth,240;queuecommand,Set" 
+			SetCommand="%function(self) self:settext(P2Difficulty) end" 
+		/>
+		<Layer 
+			Condition="not GAMESTATE:IsCourseMode()"
+			Font="_misobold small"
+			Text="???" 
+			OnCommand="x,-25;y,-12;zoom,0.4;shadowlength,0;horizalign,right;maxwidth,240;queuecommand,Set" 
+			SetCommand="%function(self) self:settext(GetStepsDescriptionText(PLAYER_2)) end" 
+		/>
+	</children> </Layer>
+	
+	<Layer File="../OffsetPlot" />
+	<Layer File="../ScreenEvaluation widget pb" />
+	<!--Layer File="Couples" /-->
+
+	<Layer
+		Type="ActorFrame"
+		InitCommand="%function(self)
+			self:x(SCREEN_CENTER_X)
+			self:y(SCREEN_CENTER_Y - 100)
+			local maxScore = STATSMAN:GetCurStageStats():GetPlayerStageStats(PLAYER_1):GetPossibleDancePoints()
+
+			local judColors = {
+				{0,1,1,1},
+				{1,1,90/255,1},
+				{0.43529411764705883,1,0.15294117647058825,1},
+				{0.6392156862745098,0.40784313725490196,0.6431372549019608,1},
+				{1,0.6039215686274509,0.011764705882352941,1},
+				{0.8941176470588236,0,0,1},
+			}
+
+			local w = 310
+			local h = 75
+			local yo = 10
+
+			self:SetDrawFunction(function(self)
+				local n = self:GetChild('Name')
+				local s = self:GetChild('Score')
+				local j = self:GetChild('Judgment')
+				local b = self:GetChild('Back')
+				local y = 0
+
+				local usr = PARTY_CMD:GetOwnUser()
+				for _,u in ipairs(PARTY_CMD.room.playingUsers) do
+					if u.id ~= usr.id then
+						b:stretchto(5, y, w, y + h)
+						b:Draw()
+
+						n:x(10)
+						n:y(y + 10)
+						n:zoom(0.5)
+						n:settext(u.username)
+						n:Draw()
+
+						s:x(w - 10)
+						s:y(y + 15)
+						s:zoom(0.5)
+						s:settext(FormatPercentScore( math.min(math.max(u.score / maxScore, 0), 1) ))
+						s:Draw()
+	
+						if u.judgments then
+							for i,ju in ipairs(u.judgments) do
+								local color = judColors[i]
+
+								j:x(20 + (i-1) * 50)
+								j:y(y + 50)
+								j:zoom(0.4)
+								j:diffuse(color[1], color[2], color[3], color[4])
+								j:settext(ju)
+								j:Draw()
+							end
+						end
+
+						y = y + h + yo
+					end
+				end
+
+			end)
+		end"
+	><children>
+		<Layer
+			Type="Quad"
+			Name="Back"
+			InitCommand="diffuse,0,0,0,1"
+		/>
+		<Layer
+			Type="BitmapText"
+			Font="_misoreg white"
+			Name="Name"
+			InitCommand="horizalign,left"
+		/>
+		<Layer
+			Type="BitmapText"
+			Font="_wendy small"
+			Name="Score"
+			InitCommand="horizalign,right"
+		/>
+		<Layer
+			Type="BitmapText"
+			Font="_wendy small"
+			Name="Judgment"
+			InitCommand="horizalign,left"
+		/>
+	</children></Layer>
+
+	<Layer
+		Type="ActorFrame"
+		InitCommand="%function(self)
+			PARTY_CMD:GameplayFinish()
+		end"
+		PartyEvaluationShowMessageCommand="hidden,1"
+	><children>
+
+		<Layer
+			Type="Quad"
+			InitCommand="stretchto,0,0,SCREEN_WIDTH,SCREEN_HEIGHT;diffuse,0,0,0,1"
+		/>
+		<Layer
+			Type="BitmapText"
+			Font="_misobold outline"
+			Text="Waiting for other players..."
+			InitCommand="xy,SCREEN_CENTER_X,SCREEN_CENTER_Y"
+		/>
+
+	</children></Layer>
+	
+</children> </ActorFrame>

@@ -1,0 +1,239 @@
+<ActorFrame
+	OnCommand="%function(self)
+		Lemonade:Send(2, {3, 1}) -- Let's report to the client that we are in the room screen
+
+		PARTY_CMD.renderRoomUsers = function(a)
+			local t = a('Text')	
+			local y = 0
+
+			for i,v in pairs(PARTY_CMD.room.users) do
+				if v.id ~= PARTY_CMD.room.userid then
+					t:zoom(0.3)
+					t:horizalign('left')
+					t:settext(v.username)	
+					t:y(y)
+
+					if v.state == PARTY_CMD.CLIENT_GAME_LOADING or
+							v.state == PARTY_CMD.CLIENT_GAME_READY or
+							v.state == PARTY_CMD.CLIENT_PLAYING or
+							v.state == PARTY_CMD.CLIENT_RESULTS then
+						t:diffuse(0,0,1,1)
+					elseif PARTY_CMD.room.hostid == v.id then
+						t:diffuse(1,1,0,1)
+					elseif v.state == PARTY_CMD.CLIENT_MISSING_SONG then
+						t:diffuse(1,0,0,1)
+					elseif v.state == PARTY_CMD.CLIENT_LOBBY_READY then
+						t:diffuse(0,1,0,1)
+					else
+						t:diffuse(1,1,1,1)
+					end
+
+					t:Draw()
+
+					y = y + 30
+				end
+			end
+		end
+	end"
+	StepP1LeftPressMessageCommand="%function(self)
+	end"
+	StepP1DownPressMessageCommand="%function(self)
+	end"
+	StepP1UpPressMessageCommand="%function(self)
+		if GAMESTATE:GetCurrentSong() and PARTY_CMD.room.hasSong and not PARTY_CMD:IsRoomPlaying() then
+			PARTY_CMD:ToggleSelfState()	
+		end
+	end"
+	StepP1RightPressMessageCommand="%function(self)
+	end"
+	StepP1MenuStartPressMessageCommand="%function(self)
+		-- HACK: For some reason, this gets called a bajillion times
+		-- So, we're running a queuecommand, and we reset it every time this MessageCommand gets called
+		self:stoptweening()
+		self:sleep(0.02)
+		self:queuecommand('Debounce')
+	end"
+	DebounceCommand="%function(self)
+		if PARTY_CMD:IsUserHost() then
+			if not PARTY_CMD:RoomAllReady() then
+				GAMESTATE:ApplyGameCommand('playmode,regular')
+				GAMESTATE:ApplyGameCommand('style,versus')
+				SCREENMAN:SetNewScreen('ScreenPartySelectMusic')
+			else
+				PARTY_CMD:StartRoom()
+			end
+		end
+	end"
+><children>
+	<Layer
+		Type="BitmapText"
+		Font="_wendy white"
+		Text="room name"
+		OnCommand="xy,SCREEN_WIDTH-30,60;horizalign,right;zoom,0.35;maxwidth,SCREEN_WIDTH*1.5;queuecommand,Update"
+		UpdateCommand="%function(self)
+			self:settext(PARTY_CMD.room.title)
+			self:sleep(0.02)
+			self:queuecommand('Update')
+		end"
+	/>
+
+	<Layer
+		Type="BitmapText"
+		Font="_wendy white"
+		Text="id"
+		OnCommand="xy,SCREEN_WIDTH-30,SCREEN_HEIGHT-40;horizalign,right;zoom,0.2;queuecommand,Update"
+		UpdateCommand="%function(self)
+			self:settext(PARTY_CMD.room.id)
+			self:sleep(0.02)
+			self:queuecommand('Update')
+		end"
+	/>
+
+	<Layer
+		Type="BitmapText"
+		Font="_wendy white"
+		Text="username"
+		OnCommand="xy,20,60;horizalign,left;zoom,0.5;queuecommand,Update"
+		UpdateCommand="%function(self)
+			local u = PARTY_CMD:GetOwnUser()
+			if u ~= nil then
+				if u.state == PARTY_CMD.CLIENT_LOBBY_READY then
+					self:diffuse(0,1,0,1)
+				elseif PARTY_CMD:IsUserHost() then
+					self:diffuse(1,1,0,1)
+				else
+					self:diffuse(1,1,1,1)
+				end
+
+				self:settext(u.username)
+			else
+				self:settext('')
+			end
+
+			self:sleep(0.02)
+			self:queuecommand('Update')
+		end"
+	/>
+
+	<Layer
+		Type="ActorFrame"
+		InitCommand="xy,20,100"
+		OnCommand="%function(self)
+			self:SetDrawFunction(PARTY_CMD.renderRoomUsers)
+		end"	
+	><children>
+		<Layer
+			Type="BitmapText"
+			Font="_wendy white"
+			Name="Text"
+			OnCommand="horizalign,left;zoom,0.5"
+		/>
+	</children></Layer>
+
+	<Layer
+		Type="BitmapText"
+		Font="_misoreg white"
+		Text="instruction host"
+		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y-40;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;diffuseblink;effectcolor1,1,1,1,1;effectcolor2,1,1,1,0.5;queuecommand,Update"
+		UpdateCommand="%function(self)
+			if PARTY_CMD:IsUserHost() then
+				if PARTY_CMD:RoomAllReady() and GAMESTATE:GetCurrentSong() then
+					self:settext('All players are ready! Press &START; to start.')
+				else
+					self:settext('Press &START; to pick a song')
+				end
+			else
+				self:settext('')
+			end
+
+			self:sleep(0.02)
+			self:queuecommand('Update')
+		end"
+	/>
+	<Layer
+		Type="BitmapText"
+		Font="_misoreg white"
+		Text="instruction player"
+		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y+90;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;diffuseblink;effectcolor1,1,1,1,1;effectcolor2,1,1,1,0.5;queuecommand,Update"
+		UpdateCommand="%function(self)
+			if GAMESTATE:GetCurrentSong() then
+				local u = PARTY_CMD:GetOwnUser()
+
+				if u and u.state == PARTY_CMD.CLIENT_IDLE then
+					self:settext('Press &UP; to get ready!')
+				elseif u and u.state == PARTY_CMD.CLIENT_LOBBY_READY then
+					self:settext('Press &UP; to stop being ready!')
+				elseif u and u.state == PARTY_CMD.CLIENT_MISSING_SONG then
+					self:settext('You are missing this song!')
+				else
+					self:settext('')
+				end
+
+				if PARTY_CMD:IsRoomPlaying() then
+					self:settext('Waiting for match to end!')
+				end
+			else
+				local u = PARTY_CMD:GetOwnUser()
+
+				if u and u.state == PARTY_CMD.CLIENT_MISSING_SONG then
+					self:settext('You are missing this song!')
+				else
+					self:settext('')
+				end
+			end
+
+			self:sleep(0.02)
+			self:queuecommand('Update')
+		end"
+	/>
+
+	<Layer
+		Type="BitmapText"
+		Font="_wendy white"
+		Text="title"
+		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
+		UpdateCommand="%function(self)
+			if GAMESTATE:GetCurrentSong() then
+				self:settext(GAMESTATE:GetCurrentSong():GetDisplayMainTitle())
+			else
+				if PARTY_CMD.room.hasSong then
+					self:settext('No song selected!')
+				else
+					self:settext('Simfile Missing!')
+				end
+			end
+			self:sleep(0.02)
+			self:queuecommand('Update')
+		end"
+	/>
+	<Layer
+		Type="BitmapText"
+		Font="_wendy white"
+		Text="artist"
+		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y+30;horizalign,right;zoom,0.3;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
+		UpdateCommand="%function(self)
+			if GAMESTATE:GetCurrentSong() then
+				self:settext(GAMESTATE:GetCurrentSong():GetDisplayArtist())
+			else
+				self:settext('')
+			end
+			self:sleep(0.02)
+			self:queuecommand('Update')
+		end"
+	/>
+	<Layer
+		Type="BitmapText"
+		Font="_wendy white"
+		Text="folder"
+		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y+55;horizalign,right;zoom,0.2;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
+		UpdateCommand="%function(self)
+			if GAMESTATE:GetCurrentSong() then
+				self:settext(GAMESTATE:GetCurrentSong():GetGroupName())
+			else
+				self:settext('')
+			end
+			self:sleep(0.02)
+			self:queuecommand('Update')
+		end"
+	/>
+</children></ActorFrame>

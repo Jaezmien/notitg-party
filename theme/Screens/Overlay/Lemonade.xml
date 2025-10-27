@@ -1,0 +1,47 @@
+<ActorFrame Condition="FUCK_EXE and tonumber(GAMESTATE:GetVersionDate()) > 20180617"><children>
+
+	<Layer
+		Type="Quad"
+		Name="Lemonade Timer"
+		OverlayReadyMessageCommand="queuecommand,First"
+		FirstCommand="%function(self)
+			self:hidden(1)
+
+			if not Lemonade.Initialized then
+				Lemonade.Timer = self
+				Lemonade:Initialize()
+				self:queuecommand('Detect')
+			end
+		end"
+		DetectCommand="%function(self)
+			if GAMESTATE:GetExternal(LEMONADE_INDEXES.OUTGOING.STATE) == LEMONADE_OUTGOING_STATE.AVAILABLE then
+				-- Sleep for half a second, then check if we still have that same data in the channel
+				self:sleep(1/2)
+				self:queuecommand('Check')
+			end
+			self:sleep(1/60)
+			self:queuecommand('Detect')
+		end"
+		CheckCommand="%function(self)
+			if Lemonade:IsOutgoingBlocked() then
+				Lemonade:ClearOutgoingData()
+			end
+		end"
+	/>
+
+	<Layer
+		Type="Quad"
+		Name="Lemonade Updater"
+		OverlayReadyMessageCommand="queuecommand,First"
+		FirstCommand="hidden,1;playcommand,Tick"
+		TickCommand="%function(self)
+			Lemonade:Tick()
+			self:sleep( 0.01 )
+			self:queuecommand('Tick')
+		end"
+	/>
+
+	<!-- Load Scripts -->
+	<Layer File="Lemonade.Loader.xml"/>
+
+</children></ActorFrame>

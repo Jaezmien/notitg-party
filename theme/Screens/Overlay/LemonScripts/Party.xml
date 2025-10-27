@@ -1,0 +1,158 @@
+<ActorFrame><children>
+
+	<Layer
+		Type="ActorFrame"
+		Name="Party"
+		OverlayReadyMessageCommand="queuecommand,First"
+		FirstCommand="%function(self)
+			if PARTY_ACTOR then return end
+			PARTY_ACTOR = self
+
+			PARTY_CMD.screen = SCREENMAN:GetTopScreen():GetName()
+			PARTY_CMD:ResetRoomData()
+			PARTY_CMD:NewScreen(PARTY_CMD.screen)
+
+			self:luaeffect('Start')
+		end"
+		StartCommand="%function(self)
+			local screen = SCREENMAN:GetTopScreen():GetName()
+
+			if PARTY_CMD.screen ~= screen then
+				PARTY_CMD:NewScreen(screen)
+				PARTY_CMD.screen = screen
+			end
+		end"
+	><children>
+		<Layer
+			Type="ActorFrame"
+			Name="PartyPlayers"	
+			InitCommand="queuecommand,Render"
+			RenderCommand="%function(self)
+				local function lerp(a, b, t)
+					return a + (b - a) * t
+				end
+
+				local fps = 60
+				local dt = 1 / fps
+
+				local function update()
+					table.sort(PARTY_CMD.room.playingUsers, function(a, b)
+						if a.left then return false end
+						if b.left then return true end					
+						return a.score > b.score
+					end)
+
+					for i,v in ipairs(PARTY_CMD.room.playingUsers) do
+						v.index = lerp(v.index, i, 6 * dt)
+					end
+
+					local score = STATSMAN:GetCurStageStats():GetPlayerStageStats(PLAYER_1):GetActualDancePoints()
+					if PARTY_CMD.score ~= score then
+						local u = PARTY_CMD:GetOwnUser()
+						if u then
+							local pu = PARTY_CMD:FindPlayingUserByID(u.id)
+							if pu then pu.score = score end
+
+							PARTY_CMD:BroadcastScore(score)
+							PARTY_CMD.score = score
+						end
+					end
+				end
+
+				local function render(s)
+					local n = s:GetChild('Name')
+					local sc = s:GetChild('Score')
+					local b = s:GetChild('Shadow')
+					local w = 175
+					local xo = 60
+
+					local maxScore = STATSMAN:GetCurStageStats():GetPlayerStageStats(PLAYER_1):GetPossibleDancePoints()
+
+					b:Draw()
+
+					n:maxwidth(w)
+					for i,v in ipairs(PARTY_CMD.room.playingUsers) do
+						local x = xo * (v.index - 1)
+
+						if v.left then
+							n:diffuse(0.5,0.5,0.5,1)
+							sc:diffuse(0.5,0.5,0.5,1)
+						elseif i == 1 then
+							n:diffuse(1,1,0,1)
+							sc:diffuse(1,1,0,1)
+						else
+							n:diffuse(1,1,1,1)
+							sc:diffuse(1,1,1,1)
+						end
+
+						n:x(5 + x)
+						n:y(5 + 0)
+						n:settext(v.username)
+						n:Draw()
+
+						local nw = math.min(n:GetWidth(), w)
+						sc:x(5 + x)
+						sc:y(5 + 15)
+						sc:settext(FormatPercentScore( math.min(math.max(v.score / maxScore, 0), 1) ))
+						sc:Draw()
+					end
+				end
+
+				local prev = os.clock()
+				local accu = 0
+				self:SetDrawFunction(function(s)
+					local now = os.clock()
+					accu = accu + (now - prev)
+					prev = now
+
+					while accu >= (1 / fps) do
+						update()
+						accu = accu - (1 / fps)
+					end
+
+					render(s)
+				end)
+			end"
+		><children>
+			<Layer
+				Type="Quad"
+				Name="Shadow"
+				InitCommand="stretchto,0,0,SCREEN_WIDTH,40;diffuse,0,0,0,1;fadebottom,1"
+			/>
+			<Layer
+				Type="BitmapText"
+				Font="_misobold outline"
+				Name="Name"
+				InitCommand="horizalign,left;vertalign,top;shadowlength,1;zoom,0.3"
+			/>
+			<Layer
+				Type="BitmapText"
+				Font="_wendy small"
+				Name="Score"
+				InitCommand="horizalign,left;vertalign,top;shadowlength,1;zoom,0.2"
+			/>
+		</children></Layer>
+
+		<Layer
+			Type="BitmapText"
+			Font="_wendy white"
+			Name="LoadingText"
+			InitCommand="xy,SCREEN_CENTER_X,SCREEN_HEIGHT-40;zoom,0.3;diffusealpha,0"
+			PartyGameplayInitMessageCommand="%function(self)
+				self:diffusealpha(1)
+				self:settext('Loading Song...')
+			end"
+			PartyGameplayReadyMessageCommand="%function(self)
+				self:diffusealpha(1)
+				self:settext('Waiting for other players...')
+			end"
+			PartyGameplayStartMessageCommand="%function(self)
+				self:settext('Good luck!')
+				self:diffusealpha(1)
+				self:decelerate(0.5)
+				self:diffusealpha(0)
+			end"
+		/>
+	</children></Layer>
+
+</children></ActorFrame>

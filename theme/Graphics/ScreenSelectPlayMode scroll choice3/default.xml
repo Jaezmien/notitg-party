@@ -1,0 +1,70 @@
+<ActorFrame> <children>
+	<Layer 
+		Type="ActorFrame"
+		OnCommand="%function(self)
+			self:zoom(0.5)
+			if not FUCK_EXE then return end
+			local af = self:GetChildAt(0):GetChildAt(1)
+			local shader = self:GetChildAt(0):GetShader()
+			af:GetChildAt(0):SetShader(shader)
+			af:GetChildAt(1):GetChildAt(0):SetShader(shader)
+			af:GetChildAt(2):SetShader(shader)
+		end"
+		GainFocusCommand="%function(self)
+			self:stoptweening()
+			self:linear(0.2)
+			self:zoom(1)
+			if not FUCK_EXE then return end
+			self:GetChildAt(0):GetShader():uniform1f('saturation',1)
+		end"
+		LoseFocusCommand="%function(self)
+			self:stoptweening()
+			self:linear(0.2)
+			self:zoom(0.5)
+			if not FUCK_EXE then return end
+			self:GetChildAt(0):GetShader():uniform1f('saturation',0)
+		end"
+	><children>
+		<Layer 
+			Type="ActorFrame"
+			Frag="saturation.frag"
+		><children>
+			<Layer
+				File="../modebg"
+				OffCommand="%OutCommand"
+			/>
+			
+			<Layer 
+				Type="ActorFrame"
+				OnCommand="zoom,.7;"
+			><children>
+				<Layer
+					File="stopwatch"
+					InitCommand="zbuffer,1"
+					OffCommand="linear,.5;diffusealpha,0"
+				/>
+				<Layer
+					Type="ActorFrame"
+					OnCommand="x,8;y,16;rotationz,15;spin;effectmagnitude,0,0,+45;effectclock,bgm"
+				> <children>
+					<AutoActor 
+						File="hand"
+						InitCommand="zbuffer,1;horizalign,right;vertalign,bottom;x,24;y,16"
+						OffCommand="linear,.5;diffusealpha,0"
+					/>
+				</children> </Layer>
+				<Layer
+					File="center"
+					InitCommand="zbuffer,1;horizalign,right;vertalign,bottom;x,36;y,36;hidden,0"
+						OffCommand="linear,.5;diffusealpha,0"
+				/>
+			</children></Layer>
+			
+		</children></Layer>
+		<Layer
+			File="survival"
+			Command="y,100"
+			OffCommand="%OutCommand"
+		/>
+	</children></Layer>
+</children> </ActorFrame>

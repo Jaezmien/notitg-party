@@ -1,0 +1,16 @@
+<ActorFrame
+	InitCommand="sleep,9e9"
+><children>
+	<Layer
+		Type="Quad"
+		InitCommand="%function(self)
+			MESSAGEMAN:Broadcast('PartyGameplayInit')
+		end"
+		OnCommand="queuecommand,Stop"
+		StopCommand="%function(self)
+			SCREENMAN:GetTopScreen():PauseGame(true)
+			MESSAGEMAN:Broadcast('PartyGameplayReady')
+			PARTY_CMD:GameplayReady()
+		end"
+	/>
+</children></ActorFrame>
