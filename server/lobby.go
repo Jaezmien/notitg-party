@@ -9,12 +9,12 @@ import (
 
 type Lobby struct {
 	RoomMutex sync.Mutex
-	Roomes    map[*Room]bool
+	Rooms    map[*Room]bool
 }
 
 func NewLobby() *Lobby {
 	return &Lobby{
-		Roomes: make(map[*Room]bool),
+		Rooms: make(map[*Room]bool),
 	}
 }
 
@@ -44,7 +44,7 @@ func (l *Lobby) NewRoom() *Room {
 	}
 
 	l.RoomMutex.Lock()
-	l.Roomes[m] = true
+	l.Rooms[m] = true
 	l.RoomMutex.Unlock()
 
 	go m.Run()
@@ -56,7 +56,7 @@ func (l *Lobby) GetRoom(id string) *Room {
 	l.RoomMutex.Lock()
 	defer l.RoomMutex.Unlock()
 
-	for m := range l.Roomes {
+	for m := range l.Rooms {
 		if m.UUID == id {
 			return m
 		}
@@ -69,10 +69,10 @@ func (l *Lobby) CloseRoom(id string) {
 	l.RoomMutex.Lock()
 	defer l.RoomMutex.Unlock()
 
-	for m := range l.Roomes {
+	for m := range l.Rooms {
 		if m.UUID == id {
 			m.Close()
-			delete(l.Roomes, m)
+			delete(l.Rooms, m)
 			return
 		}
 	}
@@ -84,7 +84,7 @@ func (l *Lobby) UsernameExists(username string) bool {
 	l.RoomMutex.Lock()
 	defer l.RoomMutex.Unlock()
 
-	for m := range l.Roomes {
+	for m := range l.Rooms {
 		if m.UsernameExists(username) {
 			return true
 		}
@@ -97,7 +97,7 @@ func (l *Lobby) GetRoomCount() int {
 	l.RoomMutex.Lock()
 	defer l.RoomMutex.Unlock()
 
-	return len(l.Roomes)
+	return len(l.Rooms)
 }
 
 type RoomSummary struct {
@@ -112,7 +112,7 @@ func (l *Lobby) GetRoomSummary() []RoomSummary {
 	defer l.RoomMutex.Unlock()
 
 	s := make([]RoomSummary, 0)
-	for m := range l.Roomes {
+	for m := range l.Rooms {
 		summary := RoomSummary{
 			ID:      m.UUID,
 			Title:   m.Title,
