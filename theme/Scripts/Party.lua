@@ -210,12 +210,7 @@ Lemonade:AddListener(2, 'party', function(buffer)
 		if buffer[2] == 1 then
 			-- Scenario: Client has successfully detected NotITG, now it's asking us to move the lobby
 			-- We'll respond back by switching to the lobby screen.
-			-- SCREENMAN:SetNewScreen('ScreenPartyLobby')
-			if PARTY_CMD.screen == 'ScreenPartyRoom' or
-				PARTY_CMD.screen == 'ScreenPartyGameplay' or
-				PARTY_CMD.screen == 'ScreenPartyEvaluation' then
-				SCREENMAN:SetNewScreen('ScreenPartyLobby')
-			end
+			SCREENMAN:SetNewScreen('ScreenPartyLobby')
 		elseif buffer[2] == 2 then
 			-- Scenario: Client is possibly exiting, and needs to inform NotITG
 			-- Let's send the acknowledgement, and hope that it receives it
