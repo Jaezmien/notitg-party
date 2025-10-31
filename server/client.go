@@ -85,13 +85,13 @@ func (c *Client) Read() {
 			break
 		}
 
-		logger.Info(fmt.Sprintf("received: %s", message))
-
 		var baseEvent events.Event
 		if err := json.Unmarshal(message, &baseEvent); err != nil {
 			logger.Error("error while parsing client message", slog.Any("err", err))
 			break
 		}
+
+		logger.Info(fmt.Sprintf("received: %s", baseEvent.Type))
 
 		switch baseEvent.Type {
 		case "room.song":
