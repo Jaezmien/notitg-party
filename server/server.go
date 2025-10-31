@@ -122,7 +122,7 @@ func main() {
 	})
 
 	logger.Info("ready to party!")
-	err := http.ListenAndServe(fmt.Sprintf("localhost:%d", Port), nil)
+	err := http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", Port), nil)
 	if err != nil {
 		logger.Error("http:", slog.Any("err", err))
 	}
