@@ -7,7 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"os"
@@ -131,7 +131,7 @@ func init() {
 type LemonInstance struct {
 	Lemon *lemonade.Lemonade
 
-	Logger *log.Logger
+	Logger *slog.Logger
 
 	State ClientState
 
@@ -152,14 +152,23 @@ func NewLemonInstance(appID int32) *LemonInstance {
 
 	instance := &LemonInstance{
 		Lemon:  lemon,
-		Logger: log.New(os.Stdout, "Party: ", log.Ldate|log.Ltime|log.Lshortfile),
 		State:  CLIENT_UNKNOWN,
 	}
 
 	if !Verbose {
 		lemon.Logger.SetOutput(io.Discard)
-		instance.Logger.SetOutput(io.Discard)
 	}
+
+	slogOptions := &slog.HandlerOptions{}
+	slogLevel := new(slog.LevelVar)
+	if Verbose {
+		slogLevel.Set(slog.LevelDebug)
+	} else {
+		slogLevel.Set(slog.LevelInfo)
+	}
+	slogOptions.Level = slogLevel
+
+	instance.Logger = slog.New(slog.NewTextHandler(os.Stdout, slogOptions))
 
 	return instance
 }
@@ -175,7 +184,7 @@ func (i *LemonInstance) AttemptClose() {
 		i.Close()
 	}
 
-	i.Logger.Println("attempting to close properly...")
+	i.Logger.Debug("attempting to close properly...")
 	i.Lemon.WriteBuffer([]int32{1, 2})
 }
 
@@ -214,7 +223,7 @@ func (i *LemonInstance) JoinRoom(id string) *websocket.Conn {
 		if err != nil {
 			panic(err)
 		}
-		i.Logger.Println(string(data))
+		i.Logger.Debug(string(data))
 		return nil
 	}
 
@@ -297,13 +306,12 @@ func main() {
 
 	db, err := bolt.Open(HashDBPath, 0600, nil)
 	if err != nil {
-		instance.Logger.Fatal("db:", err)
+		panic("db: " + err.Error())
 	}
 	defer db.Close()
 
 	instance.Lemon.OnConnect = func(l *lemonade.Lemonade) {
-		instance.Logger.Println("Detected NotITG!")
-		instance.Logger.Printf("Build Date: %d\n", l.NotITG.GetDetail().BuildDate)
+		instance.Logger.Info("Detected NotITG!", slog.Int("buildDate", l.NotITG.GetDetail().BuildDate))
 
 		// Always assume that NotITG's state is unknown
 		instance.State = CLIENT_UNKNOWN
@@ -320,7 +328,7 @@ func main() {
 		instance.State = CLIENT_UNKNOWN
 
 		if ProcessID != 0 {
-			instance.Logger.Println("Detected NotITG using PID scan had exited, closing!")
+			instance.Logger.Info("Detected NotITG using PID scan had exited, closing!")
 			instance.Close()
 		}
 	}
@@ -413,21 +421,21 @@ func main() {
 				}
 
 				if err := json.Unmarshal([]byte(message), &songData); err != nil {
-					instance.Logger.Println("error while parsing client message", "error", err)
+					instance.Logger.Debug("error while parsing client message", "error", err)
 					instance.AttemptClose()
 					return
 				}
 
 				// Get hash of song
 				if !HasSongKey(db, songData.Key) {
-					instance.Logger.Printf("client has no hash of this song! (%s)\n", songData.Key)
-					instance.Logger.Println("run this program again with -scan")
+					instance.Logger.Info(fmt.Sprintf("client has no hash of this song! (%s)\n", songData.Key))
+					instance.Logger.Info("run this program again with -scan")
 					instance.AttemptClose()
 					return
 				}
 				hash, has := GetSongHash(db, songData.Key)
 				if !has {
-					instance.Logger.Printf("could not find song with key: %s\n", songData.Key)
+					instance.Logger.Info(fmt.Sprintf("could not find song with key: %s\n", songData.Key))
 					instance.AttemptClose()
 					return
 				}
@@ -455,7 +463,7 @@ func main() {
 				// If we have it, report back to NotITG on what song it should load, and its difficulty
 				song, ok := GetSongKey(db, hash)
 				if !ok {
-					instance.Logger.Printf("could not find song from hash: %s\n", hash)
+					instance.Logger.Info(fmt.Sprintf("could not find song from hash: %s\n", hash))
 					instance.AttemptClose()
 					return
 				}
@@ -532,10 +540,10 @@ func main() {
 	signal.Notify(termChannel, os.Interrupt)
 	go func() {
 		<-termChannel
-		instance.Logger.Println("interrupt caught")
+		instance.Logger.Debug("interrupt caught")
 		instance.AttemptClose()
 		<-termChannel
-		instance.Logger.Println("very bad, will immediately exit")
+		instance.Logger.Info("very bad, will immediately exit")
 		os.Exit(1)
 	}()
 

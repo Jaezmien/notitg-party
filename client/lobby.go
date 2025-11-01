@@ -21,10 +21,10 @@ func (i *LemonInstance) PollLobby() {
 			res, err := http.Get(p)
 			if err != nil {
 				if errors.Is(err, syscall.ECONNREFUSED) {
-					i.Logger.Println("server is possibly inactive, exiting.")
+					i.Logger.Info("server is possibly inactive, exiting.")
 				} else {
-					i.Logger.Println("http error when polling lobby, exiting client...")
-					i.Logger.Println("error:" + err.Error())
+					i.Logger.Debug("http error when polling lobby, exiting client...")
+					i.Logger.Debug("error:" + err.Error())
 				}
 
 				i.AttemptClose()

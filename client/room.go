@@ -29,9 +29,9 @@ func (m *RoomConnection) Read() {
 
 		if err != nil {
 			if _, ok := err.(*websocket.CloseError); ok {
-				m.Instance.Logger.Println("close:", err)
+				m.Instance.Logger.Debug("close:", err)
 			} else {
-				m.Instance.Logger.Println("read:", err)
+				m.Instance.Logger.Debug("read:", err)
 			}
 			m.Connection.Close()
 			m.Instance.AttemptClose()
@@ -39,12 +39,12 @@ func (m *RoomConnection) Read() {
 		}
 
 		if t != websocket.TextMessage {
-			m.Instance.Logger.Println("unknown server message type")
+			m.Instance.Logger.Debug("unknown server message type")
 			continue
 		}
 
 		m.Instance.SendString(string(message), []int32{99})
-		m.Instance.Logger.Printf("received: %s", message)
+		m.Instance.Logger.Debug("received: %s", message)
 	}
 }
 
