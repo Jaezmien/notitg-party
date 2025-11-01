@@ -160,22 +160,7 @@ func (c *Client) Read() {
 				break
 			}
 
-			if !c.Room.IsReadyToStart() {
-				break
-			}
-
-			for cl := range c.Room.Clients {
-				if cl.State == CLIENT_MISSING_SONG {
-					continue
-				}
-				cl.SetNewState(CLIENT_GAME_LOADING)
-
-				cl.InMatch = true
-				cl.Send <- events.NewRoomStartEvent()
-			}
-
-			c.Room.SetNewState(ROOM_PLAYING)
-			logger.Info("room is setting up for gameplay", slog.String("id", c.Room.UUID))
+			c.Room.ReadyMatch()
 		case events.EVENT_USER_READY:
 			if c.State != CLIENT_GAME_LOADING {
 				break
@@ -183,14 +168,7 @@ func (c *Client) Read() {
 
 			c.SetNewState(CLIENT_GAME_READY)
 
-			if c.Room.IsReadyToPlay() {
-				c.Room.ForClientInMatch(func(cl *Client) {
-					cl.SetNewState(CLIENT_PLAYING)
-					cl.Send <- events.NewGameplayStartEvent()
-				})
-			}
-
-			logger.Info("room has started playing", slog.String("id", c.Room.UUID))
+			c.Room.StartMatch()
 		case events.EVENT_USER_SCORE:
 			if !c.InMatch {
 				break
@@ -258,20 +236,7 @@ func (c *Client) Read() {
 
 			logger.Info("player has finished song", slog.String("id", c.Room.UUID))
 
-			if c.Room.IsAllFinished() {
-				logger.Info("room has finished song", slog.String("id", c.Room.UUID))
-
-				c.Room.ForClientInMatch(func(cl *Client) {
-					cl.InMatch = false
-					cl.SetNewState(CLIENT_IDLE)
-
-					cl.Send <- events.NewEvaluationRevealEvent()
-				})
-
-				c.Room.SetNewState(ROOM_IDLE)
-			} else {
-				logger.Info("waiting for other players to finish...", slog.String("id", c.Room.UUID))
-			}
+			c.Room.FinishMatch()
 		}
 	}
 

@@ -137,6 +137,58 @@ func (r *Room) ForClientInMatch(callback func(c *Client)) {
 	}	
 }
 
+// Attempts to ready the room for a match
+func (r *Room) ReadyMatch() {
+	if !r.IsReadyToStart() {
+		return
+	}		
+
+	for c := range r.Clients {
+		if c.State == CLIENT_MISSING_SONG {
+			continue
+		}
+		c.SetNewState(CLIENT_GAME_LOADING)
+
+		c.InMatch = true
+		c.Send <- events.NewRoomStartEvent()
+	}
+
+	r.SetNewState(ROOM_PLAYING)
+	logger.Info("room is setting up for gameplay", slog.String("id", r.UUID))
+}
+
+// Attempts to start the match
+func (r *Room) StartMatch() {
+	if !r.IsReadyToPlay() {
+		return
+	}
+
+	r.ForClientInMatch(func(c *Client) {
+		c.SetNewState(CLIENT_PLAYING)
+		c.Send <- events.NewGameplayStartEvent()
+	})
+
+	logger.Info("room has started playing", slog.String("id", r.UUID))
+}
+
+// Attempts to finish the mamtch
+func (r *Room) FinishMatch() {
+	if !r.IsAllFinished() {
+		return
+	}
+
+	logger.Info("room has finished song", slog.String("id", r.UUID))
+
+	r.ForClientInMatch(func(c *Client) {
+		c.InMatch = false
+		c.SetNewState(CLIENT_IDLE)
+
+		c.Send <- events.NewEvaluationRevealEvent()
+	})
+
+	r.SetNewState(ROOM_IDLE)
+}
+
 func (r *Room) Run() {
 	logger.Info("new room created", slog.String("id", r.UUID))
 	defer logger.Info("room has closed", slog.String("id", r.UUID))
