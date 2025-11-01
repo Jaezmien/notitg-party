@@ -7,7 +7,6 @@ import (
 
 	"git.jaezmien.com/Jaezmien/notitg-party/server/events"
 	"github.com/gorilla/websocket"
-	// . "git.jaezmien.com/Jaezmien/notitg-party/server/global"
 )
 
 type ClientState int
