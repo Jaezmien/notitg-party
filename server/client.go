@@ -91,12 +91,12 @@ func (c *Client) Read() {
 
 		var event events.RawEvent
 		if err := json.Unmarshal(message, &event); err != nil {
-			logger.Error("error while parsing client message", slog.Any("err", err))
+			logger.Debug("error while parsing client message", slog.Any("err", err))
 			break
 		}
 
 		if event.Type != events.EVENT_USER_SCORE {
-			logger.Info(fmt.Sprintf("received event: %s", event.Type))
+			logger.Debug(fmt.Sprintf("received event: %s", event.Type))
 		}
 
 		switch event.Type {
@@ -104,16 +104,16 @@ func (c *Client) Read() {
 			var data events.SongEventData
 			err := json.Unmarshal(event.Data, &data)
 			if err != nil {
-				logger.Info("invalid client data", slog.Any("err", err))
+				logger.Debug("invalid client data", slog.Any("err", err))
 				break
 			}
 
 			if !c.Room.IsIdle() {
-				logger.Info("room not in lobby, ignoring song change")
+				logger.Debug("room not in lobby, ignoring song change")
 				break
 			}
 			if !c.Host {
-				logger.Info("client is not host, ignoring")
+				logger.Debug("client is not host, ignoring")
 				break
 			}
 
@@ -123,7 +123,7 @@ func (c *Client) Read() {
 			var data events.UserSongEventData
 			err := json.Unmarshal(event.Data, &data)
 			if err != nil {
-				logger.Info("invalid client data", slog.Any("err", err))
+				logger.Debug("invalid client data", slog.Any("err", err))
 				break
 			}
 
@@ -142,7 +142,7 @@ func (c *Client) Read() {
 			var data events.UserStateEventData
 			err := json.Unmarshal(event.Data, &data)
 			if err != nil {
-				logger.Info("invalid client data", slog.Any("err", err))
+				logger.Debug("invalid client data", slog.Any("err", err))
 				break
 			}
 
@@ -187,7 +187,7 @@ func (c *Client) Read() {
 			var data events.PartialGameplayScoreEventData
 			err := json.Unmarshal(event.Data, &data)
 			if err != nil {
-				logger.Info("invalid client data", slog.Any("err", err))
+				logger.Debug("invalid client data", slog.Any("err", err))
 				break
 			}
 
@@ -209,7 +209,7 @@ func (c *Client) Read() {
 			var data events.PartialGameplayFinishEventData
 			err := json.Unmarshal(event.Data, &data)
 			if err != nil {
-				logger.Info("invalid client data", slog.Any("err", err))
+				logger.Debug("invalid client data", slog.Any("err", err))
 				break
 			}
 

@@ -14,14 +14,29 @@ import (
 )
 
 var Port int = 8080
+var Verbose = false
 var upgrader = websocket.Upgrader{}
 
 var logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 func init() {
 	flag.IntVar(&Port, "port", 8080, "Sets the server port")
+	flag.BoolVar(&Verbose, "verbose", false, "Enable debug messages")
 
 	flag.Parse()
+
+	if Verbose {
+		slogOptions := &slog.HandlerOptions{}
+		slogLevel := new(slog.LevelVar)
+		if Verbose {
+			slogLevel.Set(slog.LevelDebug)
+		} else {
+			slogLevel.Set(slog.LevelInfo)
+		}
+		slogOptions.Level = slogLevel
+
+		logger = slog.New(slog.NewTextHandler(os.Stdout, slogOptions))
+	}
 }
 
 func main() {
