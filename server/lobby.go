@@ -9,7 +9,7 @@ import (
 
 type Lobby struct {
 	RoomMutex sync.Mutex
-	Rooms    map[*Room]bool
+	Rooms     map[*Room]bool
 }
 
 func NewLobby() *Lobby {

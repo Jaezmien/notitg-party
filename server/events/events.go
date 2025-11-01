@@ -7,19 +7,20 @@ import (
 )
 
 type EventType string
+
 const (
 	EVENT_USER_SONG_STATE EventType = "room.user.song"
-	EVENT_USER_STATE EventType = "room.user.state"
-	EVENT_USER_READY EventType = "room.game.ready"
-	EVENT_USER_SCORE EventType = "room.game.score"
-	EVENT_USER_FINISH EventType = "room.game.finish"
+	EVENT_USER_STATE      EventType = "room.user.state"
+	EVENT_USER_READY      EventType = "room.game.ready"
+	EVENT_USER_SCORE      EventType = "room.game.score"
+	EVENT_USER_FINISH     EventType = "room.game.finish"
 
-	EVENT_ROOM_SONG EventType = "room.song"
+	EVENT_ROOM_SONG  EventType = "room.song"
 	EVENT_ROOM_START EventType = "room.start"
 )
 
 type RawEvent struct {
-	Type EventType `json:"type"`
+	Type EventType       `json:"type"`
 	Data json.RawMessage `json:"data"`
 }
 
