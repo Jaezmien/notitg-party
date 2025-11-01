@@ -29,6 +29,7 @@ $ go run .
 | Name | Required | Default | Description |
 | --- | --- | --- | --- |
 | `port` | No | `8080` | Sets the server port |
+| `verbose` | No | `false` | Enable debug messages |
 
 # Client
 
