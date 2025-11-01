@@ -63,7 +63,7 @@ func (r *Room) SetNewState(state RoomState) {
 }
 
 func (r *Room) UpdateExpectedMatchEnd() {
-	if r.MatchEnd == 0 {
+	if r.MatchEnd != 0 {
 		return
 	}
 
