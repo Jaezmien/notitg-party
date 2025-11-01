@@ -184,13 +184,10 @@ func (c *Client) Read() {
 			c.SetNewState(CLIENT_GAME_READY)
 
 			if c.Room.IsReadyToPlay() {
-				for cl := range c.Room.Clients {
-					if !cl.InMatch {
-						continue
-					}
+				c.Room.ForClientInMatch(func(cl *Client) {
 					cl.SetNewState(CLIENT_PLAYING)
 					cl.Send <- events.NewGameplayStartEvent()
-				}
+				})
 			}
 
 			logger.Info("room has started playing", slog.String("id", c.Room.UUID))
@@ -216,15 +213,13 @@ func (c *Client) Read() {
 				break
 			}
 
-			for cl := range c.Room.Clients {
-				if !cl.InMatch {
-					continue
-				}
+			c.Room.ForClientInMatch(func(cl *Client) {
 				if cl.UUID == c.UUID {
-					continue
+					return
 				}
+
 				cl.Send <- events.NewGameplayScoreEvent(c.UUID, data.Score)
-			}
+			})
 		case events.EVENT_USER_FINISH:
 			if !c.InMatch {
 				break
@@ -240,12 +235,9 @@ func (c *Client) Read() {
 				break
 			}
 
-			for cl := range c.Room.Clients {
-				if !cl.InMatch {
-					continue
-				}
+			c.Room.ForClientInMatch(func(cl *Client) {
 				if cl.UUID == c.UUID {
-					continue
+					return
 				}
 
 				cl.Send <- events.NewGameplayFinishEvent(
@@ -259,7 +251,7 @@ func (c *Client) Read() {
 						Miss:      data.Miss,
 					},
 				)
-			}
+			})
 
 			c.SetNewState(CLIENT_RESULTS)
 			c.Room.BroadcastAll(events.NewRoomStateEvent(int(CLIENT_RESULTS)))
@@ -269,16 +261,12 @@ func (c *Client) Read() {
 			if c.Room.IsAllFinished() {
 				logger.Info("room has finished song", slog.String("id", c.Room.UUID))
 
-				for cl := range c.Room.Clients {
-					if !cl.InMatch {
-						continue
-					}
-
+				c.Room.ForClientInMatch(func(cl *Client) {
 					cl.InMatch = false
 					cl.SetNewState(CLIENT_IDLE)
 
 					cl.Send <- events.NewEvaluationRevealEvent()
-				}
+				})
 
 				c.Room.SetNewState(ROOM_IDLE)
 			} else {

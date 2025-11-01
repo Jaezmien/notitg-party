@@ -26,7 +26,6 @@ type Room struct {
 
 	SongHash       string
 	SongDifficulty int
-
 	Clients   map[*Client]bool
 	Broadcast chan []byte
 	Join      chan *Client
@@ -126,6 +125,16 @@ func (r *Room) IsAllFinished() bool {
 		}
 	}
 	return true
+}
+
+func (r *Room) ForClientInMatch(callback func(c *Client)) {
+	for cl := range r.Clients {
+		if !cl.InMatch {
+			continue
+		}
+
+		callback(cl)
+	}	
 }
 
 func (r *Room) Run() {
