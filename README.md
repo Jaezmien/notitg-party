@@ -39,7 +39,7 @@ $ go run .
 ```bash
 # Requires Go 1.24.0+ 
 
-$ cd server
+$ cd client
 $ go mod tidy
 
 # Scan your song folder
