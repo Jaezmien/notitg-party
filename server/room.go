@@ -12,8 +12,8 @@ import (
 
 type RoomState int
 
-var RoomStartGracePeriod = time.Duration(time.Second * 30).Milliseconds()
-var RoomEndGracePeriod = time.Duration(time.Second * 30).Milliseconds()
+var RoomStartGracePeriod = time.Duration(time.Second * 15).Milliseconds()
+var RoomEndGracePeriod = time.Duration(time.Second * 15).Milliseconds()
 
 const (
 	ROOM_IDLE RoomState = iota
