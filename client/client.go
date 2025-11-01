@@ -151,8 +151,8 @@ func NewLemonInstance(appID int32) *LemonInstance {
 	}
 
 	instance := &LemonInstance{
-		Lemon:  lemon,
-		State:  CLIENT_UNKNOWN,
+		Lemon: lemon,
+		State: CLIENT_UNKNOWN,
 	}
 
 	if !Verbose {

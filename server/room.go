@@ -40,7 +40,7 @@ type Room struct {
 	Quit chan struct{}
 
 	MatchStart int64
-	MatchEnd int64
+	MatchEnd   int64
 }
 
 func (r *Room) IsIdle() bool {
@@ -158,14 +158,14 @@ func (r *Room) ForClientInMatch(callback func(c *Client)) {
 		}
 
 		callback(cl)
-	}	
+	}
 }
 
 // Attempts to ready the room for a match
 func (r *Room) ReadyMatch() {
 	if !r.IsReadyToStart() {
 		return
-	}		
+	}
 
 	for c := range r.Clients {
 		if c.State == CLIENT_MISSING_SONG {
@@ -235,7 +235,7 @@ func (r *Room) Run() {
 			return
 
 		case <-ticker.C:
-			if r.State == ROOM_PREPARING && r.MatchStart != 0 && time.Now().UnixMilli() >= r.MatchStart + RoomStartGracePeriod {
+			if r.State == ROOM_PREPARING && r.MatchStart != 0 && time.Now().UnixMilli() >= r.MatchStart+RoomStartGracePeriod {
 				logger.Warn("room is preparing for 30 seconds, but not every client is ready. kicking clients.", slog.String("room id", r.UUID))
 
 				r.ForClientInMatch(func(c *Client) {
@@ -251,7 +251,7 @@ func (r *Room) Run() {
 				}
 			}
 
-			if r.State == ROOM_PLAYING && r.MatchEnd != 0 && time.Now().UnixMilli() >= r.MatchEnd + RoomEndGracePeriod {
+			if r.State == ROOM_PLAYING && r.MatchEnd != 0 && time.Now().UnixMilli() >= r.MatchEnd+RoomEndGracePeriod {
 				logger.Warn("match has ended with players still playing for 30 seconds, forcing match end.", slog.String("room id", r.UUID))
 
 				// Force finish the match
