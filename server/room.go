@@ -246,7 +246,7 @@ func (r *Room) Run() {
 				// Safety check
 				if r.ClientCount() > 0 {
 					logger.Warn("forcing match to start", slog.String("room id", r.UUID))
-					r.StartMatch(false)
+					r.StartMatch(true)
 				}
 			}
 
