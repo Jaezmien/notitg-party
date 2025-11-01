@@ -227,6 +227,7 @@ func (r *Room) Run() {
 	defer logger.Info("room has closed", slog.String("id", r.UUID))
 
 	ticker := time.NewTicker(time.Second * time.Duration(5))
+	defer ticker.Stop()
 
 	for {
 		select {
