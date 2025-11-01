@@ -4,12 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"git.jaezmien.com/Jaezmien/notitg-party/server/events"
 	"github.com/gorilla/websocket"
 )
 
 type ClientState int
+
+var ClientScoreThrottleMS = time.Duration(time.Second * 1).Milliseconds()
 
 const (
 	CLIENT_IDLE ClientState = iota
@@ -35,6 +38,8 @@ type Client struct {
 	Closed bool
 
 	State ClientState
+
+	UserScoreThrottle int64
 }
 
 func (c *Client) Close() {
@@ -196,6 +201,13 @@ func (c *Client) Read() {
 			if c.State != CLIENT_PLAYING {
 				break
 			}
+
+			// Throttle client score events (considering that we're constantly broadcasting this)
+			now := time.Now().UnixMilli()
+			if now < c.UserScoreThrottle {
+				break
+			}
+			c.UserScoreThrottle = now + ClientScoreThrottleMS
 
 			var data events.PartialGameplayScoreEventData
 			err := json.Unmarshal(event.Data, &data)
