@@ -206,7 +206,12 @@ func (i *LemonInstance) JoinRoom(id string) *websocket.Conn {
 	re := regexp.MustCompile("https?://")
 	s := re.ReplaceAllString(Server, "")
 
-	u := url.URL{Scheme: "ws", Host: s, Path: "/room/join"}
+	scheme := "ws"
+	if strings.HasPrefix(Server, "https") {
+		scheme = "wss"
+	}
+
+	u := url.URL{Scheme: scheme, Host: s, Path: "/room/join"}
 	q := u.Query()
 	q.Add("username", Username)
 	q.Add("room", id)
