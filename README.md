@@ -21,6 +21,7 @@
 ```bash
 # Requires Go 1.24.0+ 
 
+$ cd server
 $ go mod tidy
 $ go run .
 ```
@@ -38,6 +39,7 @@ $ go run .
 ```bash
 # Requires Go 1.24.0+ 
 
+$ cd server
 $ go mod tidy
 
 # Scan your song folder
@@ -64,9 +66,11 @@ $ go run . --username="Your Username" --server="http://your.server:8080"
 
 # Theme
 
+Install [theme/](./theme) into your `Themes/` folder as is. Feel free to rename the folder. (e.g. The path should now look like `Themes/simply-party`)
+
 ## Note
 
-If your NotITG default theme folder isn't `simply-love-notitg`, please go to [metrics.ini](./theme/metrics.ini) and change `Global.FallbackTheme` to your folder's name.
+If your NotITG default theme folder isn't `simply-love-notitg`, please go to Party's [metrics.ini](./theme/metrics.ini) and change `Global.FallbackTheme` to your folder's name.
 
 This theme contains only the necessary files, and falls back on the default theme for a majority of its content.
 
