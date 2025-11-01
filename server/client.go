@@ -65,6 +65,8 @@ func (c *Client) Write() {
 		if err != nil {
 			return
 		}
+
+		logger.Debug("sending data to client", slog.String("id", c.UUID), slog.String("data", string(message)))
 		w.Write(message)
 
 		if err := w.Close(); err != nil {
