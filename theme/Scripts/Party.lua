@@ -32,6 +32,8 @@ PARTY_CMD.CLIENT_GAME_READY = 4
 PARTY_CMD.CLIENT_PLAYING = 5
 PARTY_CMD.CLIENT_RESULTS = 6
 
+PARTY_CMD.drawLeaderboardBottom = false
+
 PARTY_CMD.difficulties = {
 	[DIFFICULTY_BEGINNER] = 'beginner',
 	[DIFFICULTY_EASY] = 'easy',

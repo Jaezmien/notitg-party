@@ -65,6 +65,8 @@
 				end
 
 				local function render(s)
+					local bottom = PARTY_CMD.drawLeaderboardBottom
+
 					local n = s:GetChild('Name')
 					local sc = s:GetChild('Score')
 					local b = s:GetChild('Shadow')
@@ -73,6 +75,15 @@
 
 					local maxScore = STATSMAN:GetCurStageStats():GetPlayerStageStats(PLAYER_1):GetPossibleDancePoints()
 
+					if bottom then
+						b:stretchto(0,SCREEN_HEIGHT-40,SCREEN_WIDTH,SCREEN_HEIGHT)
+						b:fadetop(1)
+						b:fadebottom(0)
+					else
+						b:stretchto(0,0,SCREEN_WIDTH,40)
+						b:fadetop(0)
+						b:fadebottom(1)
+					end
 					b:Draw()
 
 					n:maxwidth(w)
@@ -97,13 +108,25 @@
 						end
 
 						n:x(5 + x)
-						n:y(5 + 0)
+						if bottom then
+							n:vertalign('bottom')
+							n:y(SCREEN_HEIGHT - 12 - 0)
+						else
+							n:vertalign('top')
+							n:y(5 + 0)
+						end
 						n:settext(v.username)
 						n:Draw()
 
 						local nw = math.min(n:GetWidth(), w)
 						sc:x(5 + x)
-						sc:y(5 + 15)
+						if bottom then
+							sc:vertalign('bottom')
+							sc:y(SCREEN_HEIGHT - 5 - 15)
+						else
+							sc:vertalign('top')
+							sc:y(5 + 15)
+						end
 						sc:settext(FormatPercentScore( math.min(math.max(v.score / maxScore, 0), 1) ))
 						sc:Draw()
 					end
@@ -128,7 +151,7 @@
 			<Layer
 				Type="Quad"
 				Name="Shadow"
-				InitCommand="stretchto,0,0,SCREEN_WIDTH,40;diffuse,0,0,0,1;fadebottom,1"
+				InitCommand="diffuse,0,0,0,1"
 			/>
 			<Layer
 				Type="BitmapText"
