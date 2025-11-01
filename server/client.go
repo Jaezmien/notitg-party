@@ -108,7 +108,7 @@ func (c *Client) Read() {
 				break
 			}
 
-			if !c.Room.IsInLobby() {
+			if !c.Room.IsIdle() {
 				logger.Info("room not in lobby, ignoring song change")
 				break
 			}
@@ -127,7 +127,7 @@ func (c *Client) Read() {
 				break
 			}
 
-			if !c.Room.IsInLobby() {
+			if !c.Room.IsIdle() {
 				break
 			}
 
@@ -234,8 +234,10 @@ func (c *Client) Read() {
 			c.SetNewState(CLIENT_RESULTS)
 			c.Room.BroadcastAll(events.NewRoomStateEvent(int(CLIENT_RESULTS)))
 
+			// We're the host, we're the source of truth.
+			// If we have finished, then we can tell the server that the end time has been reached.
 			if c.Host {
-				c.Room.SetExpectedMatchEnd()
+				c.Room.UpdateExpectedMatchEnd()
 			}
 
 			logger.Info("player has finished song", slog.String("id", c.Room.UUID))

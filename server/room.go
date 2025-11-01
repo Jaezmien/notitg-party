@@ -31,6 +31,7 @@ type Room struct {
 
 	SongHash       string
 	SongDifficulty int
+
 	Clients   map[*Client]bool
 	Broadcast chan []byte
 	Join      chan *Client
@@ -42,21 +43,31 @@ type Room struct {
 	MatchEnd int64
 }
 
+func (r *Room) IsIdle() bool {
+	return r.State == ROOM_IDLE
+}
+func (r *Room) IsPreparing() bool {
+	return r.State == ROOM_PLAYING
+}
+func (r *Room) IsPlaying() bool {
+	return r.State == ROOM_PLAYING
+}
+
+func (r *Room) ClientCount() int {
+	return len(r.Clients)
+}
+
 func (r *Room) SetNewState(state RoomState) {
 	r.State = state
 	r.BroadcastAll(events.NewRoomStateEvent(int(state)))
 }
 
-func (r *Room) SetExpectedMatchEnd() {
+func (r *Room) UpdateExpectedMatchEnd() {
 	if r.MatchEnd == 0 {
 		return
 	}
 
 	r.MatchEnd = time.Now().UnixMilli()
-}
-
-func (r *Room) ClientCount() int {
-	return len(r.Clients)
 }
 
 func (r *Room) GetClientFromUsername(username string) *Client {
@@ -73,6 +84,7 @@ func (r *Room) UsernameExists(username string) bool {
 	return client != nil
 }
 
+// Checks if all players in the room doesn't have the song
 func (r *Room) AllPlayersMissingSong() bool {
 	for client := range r.Clients {
 		if client.State != CLIENT_MISSING_SONG {
@@ -83,8 +95,9 @@ func (r *Room) AllPlayersMissingSong() bool {
 	return true
 }
 
+// Checks if all players with the song are in the ready state
 func (r *Room) IsReadyToStart() bool {
-	if r.State != ROOM_IDLE {
+	if !r.IsIdle() {
 		return false
 	}
 
@@ -101,8 +114,9 @@ func (r *Room) IsReadyToStart() bool {
 	return true
 }
 
+// Checks if all players have loaded the file
 func (r *Room) IsReadyToPlay() bool {
-	if r.State != ROOM_PREPARING {
+	if !r.IsPreparing() {
 		return false
 	}
 
@@ -119,15 +133,9 @@ func (r *Room) IsReadyToPlay() bool {
 	return true
 }
 
-func (r *Room) IsInLobby() bool {
-	return r.State == ROOM_IDLE
-}
-func (r *Room) IsPlaying() bool {
-	return r.State == ROOM_PLAYING
-}
-
-func (r *Room) IsAllFinished() bool {
-	if r.State != ROOM_PLAYING {
+// Checks if all players have reached the evaluation screen
+func (r *Room) AllPlayersFinished() bool {
+	if !r.IsPlaying() {
 		return false
 	}
 
@@ -195,7 +203,7 @@ func (r *Room) StartMatch(force bool) {
 // Attempts to finish the mamtch
 func (r *Room) FinishMatch(force bool) {
 	if !force {
-		if !r.IsAllFinished() {
+		if !r.AllPlayersFinished() {
 			return
 		}
 	}
@@ -226,28 +234,27 @@ func (r *Room) Run() {
 			return
 
 		case <-ticker.C:
-			if r.State == ROOM_PREPARING && r.MatchStart != 0 {
-				if time.Now().UnixMilli() >= r.MatchStart + RoomStartGracePeriod {
-					// Scenario: Room is preparing, but not every client has been ready within 30 seconds.
+			if r.State == ROOM_PREPARING && r.MatchStart != 0 && time.Now().UnixMilli() >= r.MatchStart + RoomStartGracePeriod {
+				logger.Warn("room is preparing for 30 seconds, but not every client is ready. kicking clients.", slog.String("room id", r.UUID))
 
-					// Kick out every client that's not ready yet
-					r.ForClientInMatch(func(c *Client) {
-						if c.State != CLIENT_GAME_READY {
-							r.CloseClient(c)
-						}
-					})
+				r.ForClientInMatch(func(c *Client) {
+					if c.State != CLIENT_GAME_READY {
+						r.CloseClient(c)
+					}
+				})
 
-					// Start the match
+				// Safety check
+				if r.ClientCount() > 0 {
+					logger.Warn("forcing match to start", slog.String("room id", r.UUID))
 					r.StartMatch(false)
 				}
-			}		
-			if r.State == ROOM_PLAYING && r.MatchEnd != 0 {
-				if time.Now().UnixMilli() >= r.MatchEnd + RoomEndGracePeriod {
-					// Scenario: Room is finished, but not every client seem to have finished
+			}
 
-					// Force finish the match
-					r.FinishMatch(true)
-				}
+			if r.State == ROOM_PLAYING && r.MatchEnd != 0 && time.Now().UnixMilli() >= r.MatchEnd + RoomEndGracePeriod {
+				logger.Warn("match has ended with players still playing for 30 seconds, forcing match end.", slog.String("room id", r.UUID))
+
+				// Force finish the match
+				r.FinishMatch(true)
 			}
 
 		case client := <-r.Join:
