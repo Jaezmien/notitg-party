@@ -7,6 +7,8 @@ COMMIT = $(shell git rev-parse --short HEAD)
 LDFLAGS = -ldflags "-X main.BuildVersion=${VERSION} -X main.BuildCommit=${COMMIT}"
 
 all: clean client-linux client-windows server-linux server-windows
+linux: clean client-linux server-linux
+windows: clean client-windows server-windows
 
 clean:
 	rm -rf "${BUILD_DIR}"
