@@ -85,22 +85,20 @@ func (c *Client) Read() {
 			break
 		}
 
-		var baseEvent events.Event
-		if err := json.Unmarshal(message, &baseEvent); err != nil {
+		var event events.RawEvent
+		if err := json.Unmarshal(message, &event); err != nil {
 			logger.Error("error while parsing client message", slog.Any("err", err))
 			break
 		}
 
-		logger.Info(fmt.Sprintf("received: %s", baseEvent.Type))
+		if event.Type != events.EVENT_USER_SCORE {
+			logger.Info(fmt.Sprintf("received event: %s", event.Type))
+		}
 
-		switch baseEvent.Type {
-		case "room.song":
-			var event struct {
-				Type string               `json:"type"`
-				Data events.SongEventData `json:"data"`
-			}
-
-			err := json.Unmarshal(message, &event)
+		switch event.Type {
+		case events.EVENT_ROOM_SONG:
+			var data events.SongEventData
+			err := json.Unmarshal(event.Data, &data)
 			if err != nil {
 				logger.Info("invalid client data", slog.Any("err", err))
 				break
@@ -116,14 +114,10 @@ func (c *Client) Read() {
 			}
 
 			logger.Info("changing song!")
-			c.Room.SetSong(event.Data.Hash, event.Data.Difficulty)
-		case "room.user.song":
-			var event struct {
-				Type string                   `json:"type"`
-				Data events.UserSongEventData `json:"data"`
-			}
-
-			err := json.Unmarshal(message, &event)
+			c.Room.SetSong(data.Hash, data.Difficulty)
+		case events.EVENT_USER_SONG_STATE:
+			var data events.UserSongEventData
+			err := json.Unmarshal(event.Data, &data)
 			if err != nil {
 				logger.Info("invalid client data", slog.Any("err", err))
 				break
@@ -133,20 +127,16 @@ func (c *Client) Read() {
 				break
 			}
 
-			if event.Data.HasSong {
+			if data.HasSong {
 				c.SetNewState(CLIENT_IDLE)
 			} else {
 				c.SetNewState(CLIENT_MISSING_SONG)
 			}
 
 			c.Room.BroadcastAll(events.NewUserStateEvent(c.UUID, int(c.State)))
-		case "room.user.state":
-			var event struct {
-				Type string                    `json:"type"`
-				Data events.UserStateEventData `json:"data"`
-			}
-
-			err := json.Unmarshal(message, &event)
+		case events.EVENT_USER_STATE:
+			var data events.UserStateEventData
+			err := json.Unmarshal(event.Data, &data)
 			if err != nil {
 				logger.Info("invalid client data", slog.Any("err", err))
 				break
@@ -156,12 +146,12 @@ func (c *Client) Read() {
 				break
 			}
 
-			if event.Data.State == 0 {
+			if data.State == 0 {
 				c.SetNewState(CLIENT_IDLE)
 			} else {
 				c.SetNewState(CLIENT_LOBBY_READY)
 			}
-		case "room.start":
+		case events.EVENT_ROOM_START:
 			if !c.Host {
 				break
 			}
@@ -182,7 +172,7 @@ func (c *Client) Read() {
 
 			c.Room.SetNewState(ROOM_PLAYING)
 			logger.Info("room is setting up for gameplay", slog.String("id", c.Room.UUID))
-		case "room.game.ready":
+		case events.EVENT_USER_READY:
 			if c.State != CLIENT_GAME_LOADING {
 				break
 			}
@@ -200,7 +190,7 @@ func (c *Client) Read() {
 			}
 
 			logger.Info("room has started playing", slog.String("id", c.Room.UUID))
-		case "room.game.score":
+		case events.EVENT_USER_SCORE:
 			if !c.InMatch {
 				break
 			}
@@ -208,12 +198,8 @@ func (c *Client) Read() {
 				break
 			}
 
-			var event struct {
-				Type string                               `json:"type"`
-				Data events.PartialGameplayScoreEventData `json:"data"`
-			}
-
-			err := json.Unmarshal(message, &event)
+			var data events.PartialGameplayScoreEventData
+			err := json.Unmarshal(event.Data, &data)
 			if err != nil {
 				logger.Info("invalid client data", slog.Any("err", err))
 				break
@@ -226,9 +212,9 @@ func (c *Client) Read() {
 				if cl.UUID == c.UUID {
 					continue
 				}
-				cl.Send <- events.NewGameplayScoreEvent(c.UUID, event.Data.Score)
+				cl.Send <- events.NewGameplayScoreEvent(c.UUID, data.Score)
 			}
-		case "room.game.finish":
+		case events.EVENT_USER_FINISH:
 			if !c.InMatch {
 				break
 			}
@@ -236,12 +222,8 @@ func (c *Client) Read() {
 				break
 			}
 
-			var event struct {
-				Type string                                `json:"type"`
-				Data events.PartialGameplayFinishEventData `json:"data"`
-			}
-
-			err := json.Unmarshal(message, &event)
+			var data events.PartialGameplayFinishEventData
+			err := json.Unmarshal(event.Data, &data)
 			if err != nil {
 				logger.Info("invalid client data", slog.Any("err", err))
 				break
@@ -257,13 +239,13 @@ func (c *Client) Read() {
 
 				cl.Send <- events.NewGameplayFinishEvent(
 					c.UUID,
-					event.Data.Score, events.JudgmentScore{
-						Marvelous: event.Data.Marvelous,
-						Perfect:   event.Data.Perfect,
-						Great:     event.Data.Great,
-						Good:      event.Data.Good,
-						Boo:       event.Data.Boo,
-						Miss:      event.Data.Miss,
+					data.Score, events.JudgmentScore{
+						Marvelous: data.Marvelous,
+						Perfect:   data.Perfect,
+						Great:     data.Great,
+						Good:      data.Good,
+						Boo:       data.Boo,
+						Miss:      data.Miss,
 					},
 				)
 			}
