@@ -167,7 +167,7 @@ type PartialGameplayScoreEventData struct {
 }
 type GameplayScoreEventData struct {
 	ID    string `json:"id"`
-	Score int32  `json:"score"`
+	PartialGameplayFinishEventData
 }
 
 func NewGameplayScoreEvent(id string, score int32) []byte {
@@ -175,7 +175,9 @@ func NewGameplayScoreEvent(id string, score int32) []byte {
 		"room.game.score",
 		GameplayScoreEventData{
 			ID:    id,
-			Score: score,
+			PartialGameplayFinishEventData: PartialGameplayFinishEventData{
+				Score: score,
+			},
 		},
 	)
 }
@@ -191,13 +193,7 @@ type PartialGameplayFinishEventData struct {
 }
 type GameplayFinishEventData struct {
 	ID        string `json:"id"`
-	Score     int32  `json:"score"`
-	Marvelous int32  `json:"marvelous"`
-	Perfect   int32  `json:"perfect"`
-	Great     int32  `json:"great"`
-	Good      int32  `json:"good"`
-	Boo       int32  `json:"boo"`
-	Miss      int32  `json:"miss"`
+	PartialGameplayFinishEventData
 }
 type JudgmentScore struct {
 	Marvelous int32
@@ -213,13 +209,15 @@ func NewGameplayFinishEvent(id string, score int32, judgment JudgmentScore) []by
 		"room.game.finish",
 		GameplayFinishEventData{
 			ID:        id,
-			Score:     score,
-			Marvelous: judgment.Marvelous,
-			Perfect:   judgment.Perfect,
-			Great:     judgment.Great,
-			Good:      judgment.Good,
-			Boo:       judgment.Boo,
-			Miss:      judgment.Miss,
+			PartialGameplayFinishEventData: PartialGameplayFinishEventData{
+				Score:     score,
+				Marvelous: judgment.Marvelous,
+				Perfect:   judgment.Perfect,
+				Great:     judgment.Great,
+				Good:      judgment.Good,
+				Boo:       judgment.Boo,
+				Miss:      judgment.Miss,
+			},
 		},
 	)
 }
