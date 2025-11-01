@@ -2,6 +2,7 @@ package main
 
 import (
 	"log/slog"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -11,8 +12,12 @@ import (
 
 type RoomState int
 
+var RoomStartGracePeriod = time.Duration(time.Second * 30).Milliseconds()
+var RoomEndGracePeriod = time.Duration(time.Second * 30).Milliseconds()
+
 const (
 	ROOM_IDLE RoomState = iota
+	ROOM_PREPARING
 	ROOM_PLAYING
 )
 
@@ -32,11 +37,22 @@ type Room struct {
 	Leave     chan *Client
 
 	Quit chan struct{}
+
+	MatchStart int64
+	MatchEnd int64
 }
 
 func (r *Room) SetNewState(state RoomState) {
 	r.State = state
 	r.BroadcastAll(events.NewRoomStateEvent(int(state)))
+}
+
+func (r *Room) SetExpectedMatchEnd() {
+	if r.MatchEnd == 0 {
+		return
+	}
+
+	r.MatchEnd = time.Now().UnixMilli()
 }
 
 func (r *Room) ClientCount() int {
@@ -86,7 +102,7 @@ func (r *Room) IsReadyToStart() bool {
 }
 
 func (r *Room) IsReadyToPlay() bool {
-	if r.State != ROOM_PLAYING {
+	if r.State != ROOM_PREPARING {
 		return false
 	}
 
@@ -147,20 +163,24 @@ func (r *Room) ReadyMatch() {
 		if c.State == CLIENT_MISSING_SONG {
 			continue
 		}
-		c.SetNewState(CLIENT_GAME_LOADING)
-
 		c.InMatch = true
+
+		c.SetNewState(CLIENT_GAME_LOADING)
 		c.Send <- events.NewRoomStartEvent()
 	}
 
-	r.SetNewState(ROOM_PLAYING)
+	r.MatchStart = time.Now().UnixMilli()
+	r.MatchEnd = 0
+	r.SetNewState(ROOM_PREPARING)
 	logger.Info("room is setting up for gameplay", slog.String("id", r.UUID))
 }
 
 // Attempts to start the match
-func (r *Room) StartMatch() {
-	if !r.IsReadyToPlay() {
-		return
+func (r *Room) StartMatch(force bool) {
+	if !force {
+		if !r.IsReadyToPlay() {
+			return
+		}
 	}
 
 	r.ForClientInMatch(func(c *Client) {
@@ -168,13 +188,16 @@ func (r *Room) StartMatch() {
 		c.Send <- events.NewGameplayStartEvent()
 	})
 
+	r.SetNewState(ROOM_PLAYING)
 	logger.Info("room has started playing", slog.String("id", r.UUID))
 }
 
 // Attempts to finish the mamtch
-func (r *Room) FinishMatch() {
-	if !r.IsAllFinished() {
-		return
+func (r *Room) FinishMatch(force bool) {
+	if !force {
+		if !r.IsAllFinished() {
+			return
+		}
 	}
 
 	logger.Info("room has finished song", slog.String("id", r.UUID))
@@ -186,6 +209,8 @@ func (r *Room) FinishMatch() {
 		c.Send <- events.NewEvaluationRevealEvent()
 	})
 
+	r.MatchStart = 0
+	r.MatchEnd = 0
 	r.SetNewState(ROOM_IDLE)
 }
 
@@ -193,10 +218,37 @@ func (r *Room) Run() {
 	logger.Info("new room created", slog.String("id", r.UUID))
 	defer logger.Info("room has closed", slog.String("id", r.UUID))
 
+	ticker := time.NewTicker(time.Second * time.Duration(5))
+
 	for {
 		select {
 		case <-r.Quit:
 			return
+
+		case <-ticker.C:
+			if r.State == ROOM_PREPARING && r.MatchStart != 0 {
+				if time.Now().UnixMilli() >= r.MatchStart + RoomStartGracePeriod {
+					// Scenario: Room is preparing, but not every client has been ready within 30 seconds.
+
+					// Kick out every client that's not ready yet
+					r.ForClientInMatch(func(c *Client) {
+						if c.State != CLIENT_GAME_READY {
+							r.CloseClient(c)
+						}
+					})
+
+					// Start the match
+					r.StartMatch(false)
+				}
+			}		
+			if r.State == ROOM_PLAYING && r.MatchEnd != 0 {
+				if time.Now().UnixMilli() >= r.MatchEnd + RoomEndGracePeriod {
+					// Scenario: Room is finished, but not every client seem to have finished
+
+					// Force finish the match
+					r.FinishMatch(true)
+				}
+			}
 
 		case client := <-r.Join:
 			r.Clients[client] = true

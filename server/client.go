@@ -168,7 +168,7 @@ func (c *Client) Read() {
 
 			c.SetNewState(CLIENT_GAME_READY)
 
-			c.Room.StartMatch()
+			c.Room.StartMatch(false)
 		case events.EVENT_USER_SCORE:
 			if !c.InMatch {
 				break
@@ -234,9 +234,13 @@ func (c *Client) Read() {
 			c.SetNewState(CLIENT_RESULTS)
 			c.Room.BroadcastAll(events.NewRoomStateEvent(int(CLIENT_RESULTS)))
 
+			if c.Host {
+				c.Room.SetExpectedMatchEnd()
+			}
+
 			logger.Info("player has finished song", slog.String("id", c.Room.UUID))
 
-			c.Room.FinishMatch()
+			c.Room.FinishMatch(false)
 		}
 	}
 
