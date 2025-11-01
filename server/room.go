@@ -47,7 +47,7 @@ func (r *Room) IsIdle() bool {
 	return r.State == ROOM_IDLE
 }
 func (r *Room) IsPreparing() bool {
-	return r.State == ROOM_PLAYING
+	return r.State == ROOM_PREPARING
 }
 func (r *Room) IsPlaying() bool {
 	return r.State == ROOM_PLAYING
