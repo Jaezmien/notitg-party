@@ -254,6 +254,12 @@ func (r *Room) Run() {
 			if r.State == ROOM_PLAYING && r.MatchEnd != 0 && time.Now().UnixMilli() >= r.MatchEnd+RoomEndGracePeriod {
 				logger.Warn("match has ended with players still playing for 30 seconds, forcing match end.", slog.String("room id", r.UUID))
 
+				r.ForClientInMatch(func(c *Client) {
+					if c.State != CLIENT_RESULTS {
+						r.CloseClient(c)
+					}
+				})
+
 				// Force finish the match
 				r.FinishMatch(true)
 			}
