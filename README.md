@@ -31,6 +31,7 @@ $ go run .
 | --- | --- | --- | --- |
 | `port` | No | `8080` | Sets the server port |
 | `verbose` | No | `false` | Enable debug messages |
+| `version` | No | `false` | Print version and exit |
 
 # Client
 
@@ -59,6 +60,7 @@ $ go run . --username="Your Username" --server="http://your.server:8080"
 | `hash` | Once | `""` | When provided with the directory to 'Songs/', will scan every song in the folder |
 | `server` | Maybe | `http://localhost:8080` | The server to connect to |
 | `username` | Yes | `""` | Your username |
+| `version` | No | `false` | Print version and exit |
 
 ## Notes
 

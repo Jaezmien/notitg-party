@@ -31,6 +31,7 @@ const (
 var DeepScan = false
 var ProcessID = 0
 var Verbose = false
+var Version = false
 
 var Server = ""
 var Username = ""
@@ -49,16 +50,25 @@ const (
 	CLIENT_RESULT
 )
 
+var BuildVersion = "0.0.0-dev"
+var BuildCommit = "dev"
+
 func init() {
 	flag.BoolVar(&DeepScan, "deep", false, "Scan deeply by checking each process' memory")
 	flag.IntVar(&ProcessID, "pid", 0, "Use a specific process")
 	flag.BoolVar(&Verbose, "verbose", false, "Enable debug messages")
 	flag.StringVar(&SongsPath, "hash", "", "When provided with the directory to 'Songs/', will scan every song in the folder")
+	flag.BoolVar(&Version, "version", false, "Display version info")
 
 	flag.StringVar(&Server, "server", "http://localhost:8080", "The server to connect to")
 	flag.StringVar(&Username, "username", "", "Your username")
 
 	flag.Parse()
+
+	if Version {
+		fmt.Printf("notitg-party-client v%s@%s\n", BuildVersion, BuildCommit)
+		os.Exit(0)
+	}
 }
 
 func init() {

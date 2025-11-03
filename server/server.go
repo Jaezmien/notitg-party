@@ -16,14 +16,24 @@ import (
 var Port int = 8080
 var Verbose = false
 var upgrader = websocket.Upgrader{}
+var Version = false
 
 var logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+var BuildVersion = "0.0.0-dev"
+var BuildCommit = "dev"
 
 func init() {
 	flag.IntVar(&Port, "port", 8080, "Sets the server port")
 	flag.BoolVar(&Verbose, "verbose", false, "Enable debug messages")
+	flag.BoolVar(&Version, "version", false, "Display version info")
 
 	flag.Parse()
+
+	if Version {
+		fmt.Printf("notitg-party-server v%s@%s\n", BuildVersion, BuildCommit)
+		os.Exit(0)
+	}
 
 	if Verbose {
 		slogOptions := &slog.HandlerOptions{}
