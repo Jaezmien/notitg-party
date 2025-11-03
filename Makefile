@@ -1,7 +1,7 @@
 BUILD_DIR = "$(shell pwd)/build"
 
 GOARCH = amd64
-VERSION = 1.0.0
+VERSION = 0.1.0-alpha
 COMMIT = $(shell git rev-parse --short HEAD)
 
 LDFLAGS = -ldflags "-X main.BuildVersion=${VERSION} -X main.BuildCommit=${COMMIT}"
