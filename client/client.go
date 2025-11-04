@@ -14,6 +14,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -134,6 +135,12 @@ func init() {
 	if strings.TrimSpace(Username) == "" {
 		fmt.Println("username is required!")
 		fmt.Println("provide it using `--username`")
+		os.Exit(1)
+	}
+
+	if runtime.GOOS == "linux" && os.Geteuid() != 0 {
+		fmt.Println("this program needs to run as root!")
+		fmt.Println("use `sudo` or other alternatives.")
 		os.Exit(1)
 	}
 }
