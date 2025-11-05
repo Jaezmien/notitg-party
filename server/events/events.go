@@ -111,11 +111,32 @@ func NewUserLeaveEvent(id string) []byte {
 		BaseID{id},
 	)
 }
+
 func NewUserStateEvent(id string, state int) []byte {
 	return newEvent(
 		"room.user.state",
 		UserState{BaseID{id}, BaseState{state}},
 	)
+}
+func ParseUserStateEvent(raw json.RawMessage) (UserState, error) {
+	var data UserState
+
+	err := json.Unmarshal(raw, &data)
+	if err != nil {
+		return data, fmt.Errorf("invalid json data: %w", err)
+	}
+
+	return data, nil
+}
+func ParseUserSongStateEvent(raw json.RawMessage) (UserSongState, error) {
+	var data UserSongState
+
+	err := json.Unmarshal(raw, &data)
+	if err != nil {
+		return data, fmt.Errorf("invalid json data: %w", err)
+	}
+
+	return data, nil
 }
 
 func NewRoomIDEvent(id string) []byte {
@@ -142,6 +163,20 @@ func NewRoomSongEvent(hash string, difficulty int) []byte {
 		"room.info.song",
 		SetSong{hash, difficulty},
 	)
+}
+func ParseRoomSongEvent(raw json.RawMessage) (SetSong, error) {
+	var data SetSong
+
+	err := json.Unmarshal(raw, &data)
+	if err != nil {
+		return data, fmt.Errorf("invalid json data: %w", err)
+	}
+
+	if data.Difficulty < 0 {
+		return data, fmt.Errorf("invalid difficulty")
+	}
+
+	return data, nil
 }
 
 func NewRoomStateEvent(state int) []byte {
@@ -171,6 +206,20 @@ func NewGameplayScoreEvent(id string, score int32) []byte {
 		GameplayScoreWithUserID{BaseID{id}, score},
 	)
 }
+func ParseGameplayScoreEvent(raw json.RawMessage) (GameplayScore, error) {
+	var data GameplayScore
+
+	err := json.Unmarshal(raw, &data)
+	if err != nil {
+		return data, fmt.Errorf("invalid json data: %w", err)
+	}
+
+	if data.Score < 0 {
+		return data, fmt.Errorf("invalid score value")
+	}
+
+	return data, nil
+}
 
 type JudgmentScore struct {
 	Marvelous int32
@@ -197,6 +246,38 @@ func NewGameplayFinishEvent(id string, score int32, judgment JudgmentScore) []by
 			},
 		},
 	)
+}
+func ParseGameplayFinishEvent(raw json.RawMessage) (GameplayFinish, error) {
+	var data GameplayFinish
+
+	err := json.Unmarshal(raw, &data)
+	if err != nil {
+		return data, fmt.Errorf("invalid json data: %w", err)
+	}
+
+	if data.Score < 0 {
+		return data, fmt.Errorf("invalid score value")
+	}
+	if data.Marvelous < 0 {
+		return data, fmt.Errorf("invalid judgment value")
+	}
+	if data.Perfect < 0 {
+		return data, fmt.Errorf("invalid judgment value")
+	}
+	if data.Great < 0 {
+		return data, fmt.Errorf("invalid judgment value")
+	}
+	if data.Good < 0 {
+		return data, fmt.Errorf("invalid judgment value")
+	}
+	if data.Boo < 0 {
+		return data, fmt.Errorf("invalid judgment value")
+	}
+	if data.Miss < 0 {
+		return data, fmt.Errorf("invalid judgment value")
+	}
+
+	return data, nil
 }
 
 func NewEvaluationRevealEvent() []byte {
