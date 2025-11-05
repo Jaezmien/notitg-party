@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	. "git.jaezmien.com/Jaezmien/notitg-party/server/global"
+	j "git.jaezmien.com/Jaezmien/notitg-party/server/internal/json"
 )
 
 type EventType string
@@ -84,7 +84,7 @@ type GameplayFinishWithUserID struct {
 type Empty struct{}
 
 func newEvent(t string, data any) []byte {
-	return JSONMustByte(Event{
+	return j.MustByte(Event{
 		Type: t,
 		Data: data,
 	})
