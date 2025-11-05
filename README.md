@@ -12,7 +12,8 @@
 
 # Warning
 
-**This code is extremely pre-alpha, expect things breaking!**
+1. **This code is pre-alpha, do not be surprised if things break!**
+2. **This code is not yet suitable for public instances!**
 
 # Server
 
