@@ -39,8 +39,19 @@ type Client struct {
 
 	State ClientState
 
-	UserScoreThrottle int64
+	userScoreThrottle int64
 }
+
+// Returns false if being throttled, thus we shouldn't update
+func (c *Client) UpdateScoreThrottle() bool {
+	now := time.Now().UnixMilli()
+	if now < c.userScoreThrottle {
+		return false
+	}
+	c.userScoreThrottle = now + ClientScoreThrottleMS
+	return true
+}
+
 
 func (c *Client) Close() {
 	if c.Closed {
@@ -177,11 +188,9 @@ func (c *Client) Read() {
 			}
 
 			// Throttle client score events (considering that we're constantly broadcasting this)
-			now := time.Now().UnixMilli()
-			if now < c.UserScoreThrottle {
+			if !c.UpdateScoreThrottle() {
 				break
 			}
-			c.UserScoreThrottle = now + ClientScoreThrottleMS
 
 			data, err := events.ParseGameplayScoreEvent(event.Data)
 			if err != nil {
