@@ -52,7 +52,6 @@ func (c *Client) UpdateScoreThrottle() bool {
 	return true
 }
 
-
 func (c *Client) Close() {
 	if c.Closed {
 		return
