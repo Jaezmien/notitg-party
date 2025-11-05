@@ -103,7 +103,7 @@ func (c *Client) Read() {
 
 		switch event.Type {
 		case events.EVENT_ROOM_SONG:
-			var data events.SongEventData
+			var data events.SetSong
 			err := json.Unmarshal(event.Data, &data)
 			if err != nil {
 				logger.Debug("invalid client data", slog.Any("err", err))
@@ -122,7 +122,7 @@ func (c *Client) Read() {
 			logger.Info("changing song!")
 			c.Room.SetSong(data.Hash, data.Difficulty)
 		case events.EVENT_USER_SONG_STATE:
-			var data events.UserSongEventData
+			var data events.UserSongState
 			err := json.Unmarshal(event.Data, &data)
 			if err != nil {
 				logger.Debug("invalid client data", slog.Any("err", err))
@@ -141,7 +141,7 @@ func (c *Client) Read() {
 
 			c.Room.BroadcastAll(events.NewUserStateEvent(c.UUID, int(c.State)))
 		case events.EVENT_USER_STATE:
-			var data events.UserStateEventData
+			var data events.UserState
 			err := json.Unmarshal(event.Data, &data)
 			if err != nil {
 				logger.Debug("invalid client data", slog.Any("err", err))
@@ -186,7 +186,7 @@ func (c *Client) Read() {
 			}
 			c.UserScoreThrottle = now + ClientScoreThrottleMS
 
-			var data events.PartialGameplayScoreEventData
+			var data events.GameplayScore
 			err := json.Unmarshal(event.Data, &data)
 			if err != nil {
 				logger.Debug("invalid client data", slog.Any("err", err))
@@ -208,7 +208,7 @@ func (c *Client) Read() {
 				break
 			}
 
-			var data events.PartialGameplayFinishEventData
+			var data events.GameplayFinish
 			err := json.Unmarshal(event.Data, &data)
 			if err != nil {
 				logger.Debug("invalid client data", slog.Any("err", err))
