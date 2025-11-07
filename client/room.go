@@ -1,6 +1,10 @@
 package main
 
-import "github.com/gorilla/websocket"
+import (
+	"log/slog"
+
+	"github.com/gorilla/websocket"
+)
 
 type RoomConnection struct {
 	Connection *websocket.Conn
@@ -29,9 +33,9 @@ func (m *RoomConnection) Read() {
 
 		if err != nil {
 			if _, ok := err.(*websocket.CloseError); ok {
-				m.Instance.Logger.Debug("close:", err)
+				m.Instance.Logger.Debug("websocket close error", slog.Any("error", err))
 			} else {
-				m.Instance.Logger.Debug("read:", err)
+				m.Instance.Logger.Debug("websocket read error", slog.Any("error", err))
 			}
 			m.Connection.Close()
 			m.Instance.AttemptClose()
