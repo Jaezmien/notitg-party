@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log/slog"
 
 	"github.com/gorilla/websocket"
@@ -47,8 +48,14 @@ func (m *RoomConnection) Read() {
 			continue
 		}
 
+		// Validate json
+		var j json.RawMessage
+		if err := json.Unmarshal(message, &j); err != nil {
+			m.Instance.Logger.Warn("invalid server message", slog.String("message", string(message)))
+			continue
+		}
+
 		m.Instance.SendString(string(message), []int32{99})
-		m.Instance.Logger.Debug("received: %s", message)
 	}
 }
 
