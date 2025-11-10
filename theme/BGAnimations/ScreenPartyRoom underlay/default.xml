@@ -130,6 +130,17 @@
 		PartyRoomNoSongMessageCommand="%function(self)
 			self:hidden(1)
 		end"
+		InitCommand="queuecommand,Update"
+		UpdateCommand="%function(self)
+			local b = self:GetParent():GetChild('song beat'):getaux()
+			local bt = math.mod(b, 1)
+			local et = 1-(1-bt)*(1-bt)
+
+			self:zoom(1 + (1-et)*0.05)
+
+			self:sleep(0.02)
+			self:queuecommand('Update')
+		end"
 	/>
 
 	<!-- Room Details -->
