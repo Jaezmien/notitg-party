@@ -65,7 +65,7 @@
 				end
 
 				local function render(s)
-					local bottom = PARTY_CMD.drawLeaderboardBottom
+					local bottom = PARTY_CMD.GetPartyProfile().LeaderboardAlign == 'bottom'
 
 					local n = s:GetChild('Name')
 					local sc = s:GetChild('Score')

@@ -132,6 +132,8 @@
 		end"
 		InitCommand="queuecommand,Update"
 		UpdateCommand="%function(self)
+			if PARTY_CMD.GetPartyProfile().ReducedEffects then return end
+
 			local b = self:GetParent():GetChild('song beat'):getaux()
 			local bt = math.mod(b, 1)
 			local et = 1-(1-bt)*(1-bt)
@@ -227,9 +229,11 @@
 				self:settext('')
 			end
 
-			local b = self:GetParent():GetChild('song beat'):getaux()
-			local bt = math.mod(b, 1)
-			if bt > 0.5 then self:diffuse(1,1,1,0.5) else self:diffuse(1,1,1,1) end
+			if not PARTY_CMD.GetPartyProfile().ReducedEffects then
+				local b = self:GetParent():GetChild('song beat'):getaux()
+				local bt = math.mod(b, 1)
+				if bt > 0.5 then self:diffuse(1,1,1,0.5) else self:diffuse(1,1,1,1) end
+			end
 
 			self:sleep(0.02)
 			self:queuecommand('Update')
@@ -267,9 +271,11 @@
 				end
 			end
 
-			local b = self:GetParent():GetChild('song beat'):getaux()
-			local bt = math.mod(b, 1)
-			if bt > 0.5 then self:diffuse(1,1,1,0.5) else self:diffuse(1,1,1,1) end
+			if not PARTY_CMD.GetPartyProfile().ReducedEffects then
+				local b = self:GetParent():GetChild('song beat'):getaux()
+				local bt = math.mod(b, 1)
+				if bt > 0.5 then self:diffuse(1,1,1,0.5) else self:diffuse(1,1,1,1) end
+			end
 
 			self:sleep(0.02)
 			self:queuecommand('Update')

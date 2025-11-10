@@ -32,8 +32,6 @@ PARTY_CMD.CLIENT_GAME_READY = 4
 PARTY_CMD.CLIENT_PLAYING = 5
 PARTY_CMD.CLIENT_RESULTS = 6
 
-PARTY_CMD.drawLeaderboardBottom = false
-
 PARTY_CMD.difficulties = {
 	[DIFFICULTY_BEGINNER] = 'beginner',
 	[DIFFICULTY_EASY] = 'easy',
@@ -66,22 +64,26 @@ end
 
 function PARTY_CMD:FindUserByID(id)
 	if not PARTY_CMD:IsInRoom() then return nil end
-	for _,u in ipairs(PARTY_CMD.room.users) do
+	for _, u in ipairs(PARTY_CMD.room.users) do
 		if u.id == id then return u end
 	end
 end
+
 function PARTY_CMD:FindPlayingUserByID(id)
 	if not PARTY_CMD:IsInRoom() then return nil end
-	for _,u in ipairs(PARTY_CMD.room.playingUsers) do
+	for _, u in ipairs(PARTY_CMD.room.playingUsers) do
 		if u.id == id then return u end
 	end
 end
+
 function PARTY_CMD:GetOwnUser()
 	return PARTY_CMD:FindUserByID(PARTY_CMD.room.userid)
 end
+
 function PARTY_CMD:GetRoomHost()
 	return PARTY_CMD:FindUserByID(PARTY_CMD.room.hostid)
 end
+
 function PARTY_CMD:IsUserHost()
 	return PARTY_CMD:IsInRoom() and PARTY_CMD.room.userid == PARTY_CMD.room.hostid
 end
@@ -89,15 +91,16 @@ end
 function PARTY_CMD:NewScreen(s)
 	PARTY_CMD.lobbyRooms = {}
 
-	PARTY_ACTOR:GetChild('PartyPlayers'):hidden( s == 'ScreenPartyGameplay' and 0 or 1 )
-	PARTY_ACTOR:GetChild('LoadingText'):hidden( s == 'ScreenPartyGameplay' and 0 or 1 )
+	PARTY_ACTOR:GetChild('PartyPlayers'):hidden(s == 'ScreenPartyGameplay' and 0 or 1)
+	PARTY_ACTOR:GetChild('LoadingText'):hidden(s == 'ScreenPartyGameplay' and 0 or 1)
 end
 
 function PARTY_CMD:CreateRoom()
-	Lemonade:Send(2, {2, 2})
+	Lemonade:Send(2, { 2, 2 })
 
 	PARTY_CMD:ResetRoomData()
 end
+
 function PARTY_CMD:JoinRoom(id)
 	local data = Lemonade:Encode(id)
 	table.insert(data, 1, 3) -- {3, data...}
@@ -110,16 +113,16 @@ end
 function PARTY_CMD:RoomAllReady()
 	if table.getn(PARTY_CMD.room.users) == 0 then return false end
 
-	for _,u in ipairs(PARTY_CMD.room.users) do
+	for _, u in ipairs(PARTY_CMD.room.users) do
 		if u.state ~= PARTY_CMD.CLIENT_LOBBY_READY and
 			u.state ~= PARTY_CMD.CLIENT_MISSING_SONG then
-				return false
+			return false
 		end
 	end
 
 	-- handle just in case every player in the lobby is missing the song
 	local allMissing = true
-	for _,u in ipairs(PARTY_CMD.room.users) do
+	for _, u in ipairs(PARTY_CMD.room.users) do
 		if u.state ~= PARTY_CMD.CLIENT_MISSING_SONG then
 			allMissing = false
 			break
@@ -135,9 +138,9 @@ function PARTY_CMD:ToggleSelfState(id)
 	if u == nil then return end
 
 	if u.state == PARTY_CMD.CLIENT_IDLE then
-		Lemonade:Send(2, {3, 4, 1}) -- Set our state to ready
+		Lemonade:Send(2, { 3, 4, 1 }) -- Set our state to ready
 	else
-		Lemonade:Send(2, {3, 4, 0}) -- Set our state to idle
+		Lemonade:Send(2, { 3, 4, 0 }) -- Set our state to idle
 	end
 end
 
@@ -145,16 +148,19 @@ function PARTY_CMD:StartRoom()
 	if PARTY_CMD:GetOwnUser() == nil then return end
 	if not PARTY_CMD:IsUserHost() then return end
 
-	Lemonade:Send(2, {3, 5}) -- Let's get started!
+	Lemonade:Send(2, { 3, 5 }) -- Let's get started!
 end
+
 function PARTY_CMD:IsRoomPlaying()
 	return PARTY_CMD.room.state == PARTY_CMD.ROOM_PLAYING
 end
+
 function PARTY_CMD:GameplayReady()
 	if PARTY_CMD:GetOwnUser() == nil then return end
 
-	Lemonade:Send(2, {4, 1})
+	Lemonade:Send(2, { 4, 1 })
 end
+
 function PARTY_CMD:GameplayFinish()
 	if PARTY_CMD:GetOwnUser() == nil then return end
 
@@ -168,7 +174,7 @@ function PARTY_CMD:GameplayFinish()
 	local boo = stats:GetTapNoteScores(TNS_BOO)
 	local miss = stats:GetTapNoteScores(TNS_MISS)
 
-	Lemonade:Send(2, {4, 3, score, marvelous, perfect, great, good, boo, miss})
+	Lemonade:Send(2, { 4, 3, score, marvelous, perfect, great, good, boo, miss })
 end
 
 local newSongHush = hush(3)
@@ -184,7 +190,7 @@ function PARTY_CMD:SetNewSong()
 	end
 
 	local jsonData = {
-		key = folder ..'/'.. file,
+		key = folder .. '/' .. file,
 		difficulty = GAMESTATE:PlayerDifficulty(PLAYER_1)
 	}
 
@@ -195,12 +201,12 @@ function PARTY_CMD:SetNewSong()
 end
 
 function PARTY_CMD:BroadcastScore(score)
-	Lemonade:Send(2, {4, 2, score})
+	Lemonade:Send(2, { 4, 2, score })
 end
 
 local function popBuffer(buf, n)
 	local data = {}
-	for i,v in ipairs(buf) do
+	for i, v in ipairs(buf) do
 		if i > n then table.insert(data, v) end
 	end
 	return data
@@ -216,7 +222,7 @@ Lemonade:AddListener(2, 'party', function(buffer)
 		elseif buffer[2] == 2 then
 			-- Scenario: Client is possibly exiting, and needs to inform NotITG
 			-- Let's send the acknowledgement, and hope that it receives it
-			Lemonade:Send(2, {1, 2})
+			Lemonade:Send(2, { 1, 2 })
 			SCREENMAN:SetNewScreen('ScreenTitleMenu')
 		end
 	end
@@ -274,7 +280,7 @@ Lemonade:AddListener(2, 'party', function(buffer)
 			})
 		end
 		if jsonData.type == 'room.user.leave' then
-			for i,v in ipairs(PARTY_CMD.room.users) do
+			for i, v in ipairs(PARTY_CMD.room.users) do
 				if v.id == jsonData.data.id then
 					table.remove(PARTY_CMD.room.users, i)
 					break
@@ -292,7 +298,7 @@ Lemonade:AddListener(2, 'party', function(buffer)
 			PARTY_CMD.room.playingUsers = {}
 
 			local idx = 1
-			for i,v in ipairs(PARTY_CMD.room.users) do
+			for i, v in ipairs(PARTY_CMD.room.users) do
 				if v.state == PARTY_CMD.CLIENT_LOBBY_READY or
 					v.state == PARTY_CMD.CLIENT_GAME_LOADING then
 					table.insert(PARTY_CMD.room.playingUsers, {
@@ -389,3 +395,59 @@ Lemonade:AddListener(2, 'party', function(buffer)
 	if buffer[1] == 4 then
 	end
 end)
+
+local function GetPartyProfile()
+	if not PROFILEMAN then return {} end
+	local p = PROFILEMAN:GetMachineProfile():GetSaved()
+	if not p then return {} end
+
+	if not p.PARTY then
+		p.PARTY = {
+			LeaderboardAlign = 'top',
+			ReducedEffects = false,
+		}
+	end
+
+	return p.PARTY
+end
+PARTY_CMD.GetPartyProfile = GetPartyProfile
+
+function PARTY_CMD.SetPartyProfile(t)
+	if t then PROFILEMAN:GetMachineProfile():GetSaved().PARTY = t end
+	PROFILEMAN:SaveMachineProfile()
+end
+
+PARTY_CMD.Options = {
+	LeaderboardAlign = function()
+		local r = OptionRowBase('LeaderboardAlign')
+		r.OneChoiceForAllPlayers = true
+		r.Choices = { 'Top', 'Bottom' }
+		r.LoadSelections = function(self,list, pn)
+			local p = GetPartyProfile()
+
+			list[p.LeaderboardAlign == 'top' and 1 or 2] = true
+		end
+		r.SaveSelections = function(self,list, pn)
+			local p = GetPartyProfile()
+
+			p.LeaderboardAlign = list[1] and 'top' or 'bottom'
+		end
+		return r
+	end,
+	ReducedEffects = function()
+		local r = OptionRowBase('ReducedEffects')
+		r.OneChoiceForAllPlayers = true
+		r.Choices = { 'More Effects', 'Reduce Effects' }
+		r.LoadSelections = function(self,list, pn)
+			local p = GetPartyProfile()
+
+			list[p.ReducedEffects and 2 or 1] = true
+		end
+		r.SaveSelections = function(self,list, pn)
+			local p = GetPartyProfile()
+
+			p.ReducedEffects = list[2] == true
+		end
+		return r
+	end
+}
