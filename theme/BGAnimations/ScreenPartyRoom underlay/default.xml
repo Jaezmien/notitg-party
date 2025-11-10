@@ -66,6 +66,25 @@
 	end"
 ><children>
 	<Layer
+		Type="Sprite"
+		PartyRoomSongMessageCommand="%function(self)
+			local song = GAMESTATE:GetCurrentSong()
+			
+			if song:GetBackgroundPath() then
+				self:LoadBackground(song:GetBackgroundPath())
+				self:scaletocover(0,0,SCREEN_WIDTH,SCREEN_HEIGHT)
+				self:diffusealpha(0.2)
+				self:hidden(0)
+			else
+				self:hidden(1)
+			end
+		end"
+		PartyRoomNoSongMessageCommand="%function(self)
+			self:hidden(1)
+		end"
+	/>
+
+	<Layer
 		Type="BitmapText"
 		Font="_wendy white"
 		Text="room name"
@@ -134,7 +153,7 @@
 		Type="BitmapText"
 		Font="_misoreg white"
 		Text="instruction host"
-		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y-40;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;diffuseblink;effectcolor1,1,1,1,1;effectcolor2,1,1,1,0.5;queuecommand,Update"
+		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y+180;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;diffuseblink;effectcolor1,1,1,1,1;effectcolor2,1,1,1,0.5;queuecommand,Update"
 		UpdateCommand="%function(self)
 			if PARTY_CMD:IsUserHost() then
 				if PARTY_CMD:RoomAllReady() and GAMESTATE:GetCurrentSong() then
@@ -276,17 +295,17 @@
 				local mi = song:GetSampleStartSeconds()
 				local ma = mi + song:GetSampleLengthSeconds()
 
-				local vol = 1
+				local vol = 0.7
 				local fadelen = 1
 				if p > ma - 1 then
 					local start = ma - fadelen
 					local len = ma - mi
 					local t = (p - start) / fadelen
-					vol = math.max(0, math.min(1 - t, 1))
+					vol = math.max(0, math.min(1 - t, 1)) * vol
 				end
 				sound:volume(vol)
 
-				if p < mi or p > ma then
+				if p < mi or p >= ma - 0.1 then
 					self:pause(true)
 					sound:SetSoundPosition(mi)
 					self:pause(false)
@@ -316,6 +335,32 @@
 
 			sound:Pause(false)
 			sound:Stop()
+		end"
+	/>
+
+	<Layer
+		Type="Sprite"
+		PartyRoomSongMessageCommand="%function(self)
+			local song = GAMESTATE:GetCurrentSong()
+			
+			if song:GetBannerPath() then
+				local w = 418
+				local h = 164
+				local r = w/h
+		
+				self:LoadBanner(song:GetBannerPath())
+				self:SetWidth(w)
+				self:SetHeight(h)
+				self:zoom(0.5)
+				self:horizalign('right')
+				self:xy(SCREEN_WIDTH - 40,SCREEN_CENTER_Y - 65)
+				self:hidden(0)
+			else
+				self:hidden(1)
+			end
+		end"
+		PartyRoomNoSongMessageCommand="%function(self)
+			self:hidden(1)
 		end"
 	/>
 </children></ActorFrame>
