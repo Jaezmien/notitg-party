@@ -166,7 +166,7 @@ function PARTY_CMD:GameplayFinish()
 
 	local stats = STATSMAN:GetCurStageStats():GetPlayerStageStats(PLAYER_1)
 
-	local score = stats:GetActualDancePoints()
+	local score = math.max(0,stats:GetActualDancePoints())
 	local marvelous = stats:GetTapNoteScores(TNS_MARVELOUS)
 	local perfect = stats:GetTapNoteScores(TNS_PERFECT)
 	local great = stats:GetTapNoteScores(TNS_GREAT)
