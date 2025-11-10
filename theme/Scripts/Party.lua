@@ -216,14 +216,22 @@ Lemonade:AddListener(2, 'party', function(buffer)
 	-- Miscellaneous
 	if buffer[1] == 1 then
 		if buffer[2] == 1 then
-			-- Scenario: Client has successfully detected NotITG, now it's asking us to move the lobby
-			-- We'll respond back by switching to the lobby screen.
-			SCREENMAN:SetNewScreen('ScreenPartyLobby')
+			-- Scenario: Client has successfully detected NotITG
+			-- Let's just indicate to the user that the client has connected
+			-- Though, if the user is in a Party screen, let's move them back to the lobby
+			local s = SCREENMAN:GetTopScreen():GetName()
+			if s == 'ScreenPartyRoom' or s == 'ScreenPartyGameplay' or s == 'ScreenPartyEvaluation' then
+				SCREENMAN:SetNewScreen('ScreenPartyLobby')
+			else
+				-- TODO: Maybe a fancy overlay animation for this one instead of SystemMessage
+				SCREENMAN:SystemMessage('Client has connected!')
+			end
 		elseif buffer[2] == 2 then
 			-- Scenario: Client is possibly exiting, and needs to inform NotITG
 			-- Let's send the acknowledgement, and hope that it receives it
 			Lemonade:Send(2, { 1, 2 })
 			SCREENMAN:SetNewScreen('ScreenTitleMenu')
+			SCREENMAN:SystemMessage('Client has disconnected!')
 		end
 	end
 
