@@ -100,7 +100,11 @@ func ScanSongFolder(db *bolt.DB, folder string) error {
 				panic(fmt.Errorf("db: %w", err))
 			}
 
-			fmt.Printf("hashed %s!\n", song.Name())
+			if Verbose {
+				fmt.Printf("hashed %s as %s!\n", key, hash)
+			} else {
+				fmt.Printf("hashed %s!\n", key)
+			}
 		}
 	}
 
