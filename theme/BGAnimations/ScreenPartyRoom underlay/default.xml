@@ -208,9 +208,9 @@
 
 	<Layer
 		Type="BitmapText"
-		Font="_wendy white"
-		Text="title"
-		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
+		Font="_misobold outline"
+		Text="song title"
+		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y;horizalign,right;zoom,0.6;maxwidth,SCREEN_WIDTH*1.0;queuecommand,Update"
 		UpdateCommand="%function(self)
 			if GAMESTATE:GetCurrentSong() then
 				self:settext(GAMESTATE:GetCurrentSong():GetDisplayMainTitle())
@@ -227,9 +227,9 @@
 	/>
 	<Layer
 		Type="BitmapText"
-		Font="_wendy white"
-		Text="artist"
-		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y+30;horizalign,right;zoom,0.3;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
+		Font="_misoreg white"
+		Text="song artist"
+		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y+28;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.0;queuecommand,Update"
 		UpdateCommand="%function(self)
 			if GAMESTATE:GetCurrentSong() then
 				self:settext(GAMESTATE:GetCurrentSong():GetDisplayArtist())
@@ -242,9 +242,9 @@
 	/>
 	<Layer
 		Type="BitmapText"
-		Font="_wendy white"
-		Text="folder"
-		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y+55;horizalign,right;zoom,0.2;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
+		Font="_misoreg small"
+		Text="song folder"
+		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y+50;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
 		UpdateCommand="%function(self)
 			if GAMESTATE:GetCurrentSong() then
 				self:settext(GAMESTATE:GetCurrentSong():GetGroupName())
