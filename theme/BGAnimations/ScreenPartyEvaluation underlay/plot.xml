@@ -169,8 +169,8 @@ end"><children>
 		curcard[pn] = curcard[pn]-1
 
 		if curcard[pn] < -1 then
-			if oplot_spellcards then
-				curcard[pn] = table.getn(oplot_spellcards)
+			if oplot_spellCards then
+				curcard[pn] = table.getn(oplot_spellCards)
 			else
 				curcard[pn] = 0
 			end
@@ -184,9 +184,9 @@ end"><children>
 
 		curcard[pn] = curcard[pn]+1
 
-		if oplot_spellcards and curcard[pn] > table.getn(oplot_spellcards) then
+		if oplot_spellCards and curcard[pn] > table.getn(oplot_spellCards) then
 			curcard[pn] = -1
-		elseif not oplot_spellcards and curcard[pn] > 0 then
+		elseif not oplot_spellCards and curcard[pn] > 0 then
 			curcard[pn] = -1
 		end
 
