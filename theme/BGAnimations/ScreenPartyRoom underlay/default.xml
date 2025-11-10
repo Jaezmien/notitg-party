@@ -172,7 +172,7 @@
 		Type="BitmapText"
 		Font="_misoreg white"
 		Text="instruction host"
-		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y+180;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
+		OnCommand="xy,SCREEN_WIDTH-30,SCREEN_CENTER_Y+180;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
 		UpdateCommand="%function(self)
 			if PARTY_CMD:IsUserHost() then
 				if PARTY_CMD:RoomAllReady() and GAMESTATE:GetCurrentSong() then
@@ -196,7 +196,7 @@
 		Type="BitmapText"
 		Font="_misoreg white"
 		Text="instruction player"
-		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y+90;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
+		OnCommand="xy,SCREEN_WIDTH-30,SCREEN_CENTER_Y+90;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
 		UpdateCommand="%function(self)
 			if GAMESTATE:GetCurrentSong() then
 				local u = PARTY_CMD:GetOwnUser()
@@ -237,7 +237,7 @@
 		Type="BitmapText"
 		Font="_misobold outline"
 		Text="song title"
-		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y;horizalign,right;zoom,0.6;maxwidth,SCREEN_WIDTH*1.0;queuecommand,Update"
+		OnCommand="xy,SCREEN_WIDTH-30,SCREEN_CENTER_Y;horizalign,right;zoom,0.6;maxwidth,SCREEN_WIDTH*1.0;queuecommand,Update"
 		UpdateCommand="%function(self)
 			if GAMESTATE:GetCurrentSong() then
 				self:settext(GAMESTATE:GetCurrentSong():GetDisplayMainTitle())
@@ -256,7 +256,7 @@
 		Type="BitmapText"
 		Font="_misoreg white"
 		Text="song artist"
-		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y+28;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.0;queuecommand,Update"
+		OnCommand="xy,SCREEN_WIDTH-30,SCREEN_CENTER_Y+28;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.0;queuecommand,Update"
 		UpdateCommand="%function(self)
 			if GAMESTATE:GetCurrentSong() then
 				self:settext(GAMESTATE:GetCurrentSong():GetDisplayArtist())
@@ -271,7 +271,7 @@
 		Type="BitmapText"
 		Font="_misoreg small"
 		Text="song folder"
-		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y+50;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
+		OnCommand="xy,SCREEN_WIDTH-30,SCREEN_CENTER_Y+50;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
 		UpdateCommand="%function(self)
 			if GAMESTATE:GetCurrentSong() then
 				self:settext(GAMESTATE:GetCurrentSong():GetGroupName())
@@ -380,7 +380,7 @@
 				self:SetHeight(h)
 				self:zoom(0.5)
 				self:horizalign('right')
-				self:xy(SCREEN_WIDTH - 40,SCREEN_CENTER_Y - 65)
+				self:xy(SCREEN_WIDTH - 30,SCREEN_CENTER_Y - 65)
 				self:hidden(0)
 			else
 				self:hidden(1)
