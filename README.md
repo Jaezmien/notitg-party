@@ -10,10 +10,11 @@
 
 </div>
 
-# Warning
+Detailed instructions [here!](https://github.com/Jaezmien/notitg-party/wiki/Instructions)
 
-1. **This code is pre-alpha, do not be surprised if things break!**
-2. **This code is not yet suitable for public instances!**
+> [!warning]
+> 1. **This code is alpha, do not be surprised if things break!**
+> 2. **This code is not yet suitable for public instances!**
 
 # Server
 
@@ -51,6 +52,9 @@ $ go run . --hash="Path to your Songs/ folder"
 $ go run . --username="Your Username" --server="http://your.server:8080"
 ```
 
+> [!note]
+> If you are on Linux, you need to run the program with `sudo` priviledges.
+
 ## Flags
 
 | Name | Required | Default | Description |
@@ -63,19 +67,14 @@ $ go run . --username="Your Username" --server="http://your.server:8080"
 | `username` | Yes | `""` | Your username |
 | `version` | No | `false` | Print version and exit |
 
-## Notes
-
-- If you are on Linux, you need to run the program with `sudo` priviledges.
-
 # Theme
 
 Install [theme/](./theme) into your `Themes/` folder as is. Feel free to rename the folder. (e.g. The path should now look like `Themes/simply-party`)
 
-## Note
-
-If your NotITG default theme folder isn't `simply-love-notitg`, please go to Party's [metrics.ini](./theme/metrics.ini) and change `Global.FallbackTheme` to your folder's name.
-
-This theme contains only the necessary files, and falls back on the default theme for a majority of its content.
+> [!note]
+> If your NotITG default theme folder isn't `simply-love-notitg`, please go to Party's [metrics.ini](./theme/metrics.ini) and change `Global.FallbackTheme` to your folder's name.
+> 
+> This theme contains only the necessary files, and falls back on the default theme for a majority of its content.
 
 # Testers
 - UltraAmeise
