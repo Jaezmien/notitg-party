@@ -242,13 +242,16 @@ func (i *LemonInstance) JoinRoom(id string) *websocket.Conn {
 		if errors.Is(err, syscall.ECONNREFUSED) {
 			fmt.Println("server is possibly inactive, exiting.")
 			i.AttemptClose()
+			return nil
 		}
 
-		data, err := io.ReadAll(t.Body)
-		if err != nil {
-			panic(fmt.Errorf("io read: %w", err))
+		if t != nil {
+			data, err := io.ReadAll(t.Body)
+			if err != nil {
+				panic(fmt.Errorf("io read: %w", err))
+			}
+			i.Logger.Debug(string(data))
 		}
-		i.Logger.Debug(string(data))
 		return nil
 	}
 
