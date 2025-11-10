@@ -218,7 +218,7 @@
 
 			local b = self:GetParent():GetChild('song beat'):getaux()
 			local bt = math.mod(b, 1)
-			if bt > 0.5 then self:diffuse(1,1,1,1) else self:diffuse(1,1,1,0.5) end
+			if bt > 0.5 then self:diffuse(1,1,1,0.5) else self:diffuse(1,1,1,1) end
 
 			self:sleep(0.02)
 			self:queuecommand('Update')
@@ -258,7 +258,7 @@
 
 			local b = self:GetParent():GetChild('song beat'):getaux()
 			local bt = math.mod(b, 1)
-			if bt > 0.5 then self:diffuse(1,1,1,1) else self:diffuse(1,1,1,0.5) end
+			if bt > 0.5 then self:diffuse(1,1,1,0.5) else self:diffuse(1,1,1,1) end
 
 			self:sleep(0.02)
 			self:queuecommand('Update')
