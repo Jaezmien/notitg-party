@@ -54,6 +54,13 @@
 					end
 				end
 			end
+
+			table.sort(PARTY_CMD.room.playingUsers, function(a, b)
+				if a.left then return false end
+				if b.left then return true end					
+				return a.score > b.score
+			end)
+
 			self:queuecommand('UpdateStats')
 		end"
 		UpdateStatsCommand="%function(self)
