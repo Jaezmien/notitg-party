@@ -46,7 +46,6 @@ $ cd client
 $ go mod tidy
 
 # Scan your song folder
-# In your first run, it will create an empty blacklist.ini for you before exiting
 $ go run . --hash="Path to your Songs/ folder"
 
 $ go run . --username="Your Username" --server="http://your.server:8080"
