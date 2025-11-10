@@ -80,8 +80,8 @@
 	<Layer
 		Type="BitmapText"
 		Font="_wendy white"
-		Text="id"
-		OnCommand="xy,SCREEN_WIDTH-30,SCREEN_HEIGHT-40;horizalign,right;zoom,0.2;queuecommand,Update"
+		Text="room id"
+		OnCommand="xy,SCREEN_WIDTH-30,90;horizalign,right;zoom,0.2;queuecommand,Update"
 		UpdateCommand="%function(self)
 			self:settext(PARTY_CMD.room.id)
 			self:sleep(0.02)
