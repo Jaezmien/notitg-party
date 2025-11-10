@@ -3,7 +3,7 @@
 # NotITG Party
 
 <a href="#">
-  <img src="https://img.shields.io/badge/version-pre--alpha-red">  
+  <img src="https://img.shields.io/badge/version-alpha-orange">  
 </a>
 
 > forcefully shoving online multiplayer into a single player game
