@@ -236,4 +236,86 @@
 			self:queuecommand('Update')
 		end"
 	/>
+
+	<Layer
+		Type="Quad"
+		OnCommand="%function(self)
+			PARTY_CMD.__roomsong = nil 
+
+			self:hidden(1)
+			self:queuecommand('Update')
+		end"
+		UpdateCommand="%function(self)
+			if GAMESTATE:GetCurrentSong() then
+				if PARTY_CMD.__roomsong ~= GAMESTATE:GetCurrentSong() then
+					PARTY_CMD.__roomsong = GAMESTATE:GetCurrentSong()
+					MESSAGEMAN:Broadcast('PartyRoomSong')
+				end
+			else
+				if PARTY_CMD.__roomsong ~= nil then
+					PARTY_CMD.__roomsong = nil 
+					MESSAGEMAN:Broadcast('PartyRoomNoSong')
+				end
+			end
+
+			self:sleep(0.02)
+			self:queuecommand('Update')
+		end"
+	/>
+
+	<Layer
+		Type="ActorSound"
+		File="silent.ogg"
+		OnCommand="queuecommand,Update"
+		UpdateCommand="%function(self)
+			local sound = self:get()
+
+			if sound and sound:IsPlaying() then
+				local p = sound:GetSoundPosition()
+				local song = GAMESTATE:GetCurrentSong()
+				local mi = song:GetSampleStartSeconds()
+				local ma = mi + song:GetSampleLengthSeconds()
+
+				local vol = 1
+				local fadelen = 1
+				if p > ma - 1 then
+					local start = ma - fadelen
+					local len = ma - mi
+					local t = (p - start) / fadelen
+					vol = math.max(0, math.min(1 - t, 1))
+				end
+				sound:volume(vol)
+
+				if p < mi or p > ma then
+					self:pause(true)
+					sound:SetSoundPosition(mi)
+					self:pause(false)
+					self:sleep(1)
+				end
+			end
+
+			self:sleep(0.02)
+			self:queuecommand('Update')
+		end"
+		PartyRoomSongMessageCommand="%function(self)
+			local song = GAMESTATE:GetCurrentSong()
+
+			self:stop()
+			self:load( song:GetMusicPath() )
+			self:start()
+			self:get():volume(0)
+			self:get():SetSoundPosition( song:GetSampleStartSeconds() )
+
+			self:aux(1)
+		end"
+		PartyRoomNoSongMessageCommand="%function(self)
+			self:aux(0)
+
+			local sound = self:get()
+			if not sound then return end
+
+			sound:Pause(false)
+			sound:Stop()
+		end"
+	/>
 </children></ActorFrame>
