@@ -106,25 +106,23 @@ func init() {
 func init() {
 	wd, err := os.Getwd()
 	if err != nil {
-		fmt.Println("error with os")
-		panic(err)
+		panic(fmt.Errorf("os getwd: %w", err))
 	}
 	HashDBPath = filepath.Join(wd, "cache.db")
 
 	db, err := bolt.Open(HashDBPath, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("db: %w", err))
 	}
 	defer db.Close()
 
 	if err := CreateHashBucket(db, SongsPath != ""); err != nil {
-		fmt.Println("db error")
-		panic(err)
+		panic(fmt.Errorf("db: %w", err))
 	}
 
 	if SongsPath != "" {
 		if err := ScanSongFolder(db, SongsPath); err != nil {
-			panic(err)
+			panic(fmt.Errorf("song folder scan: %w", err))
 		}
 
 		os.Exit(0)
@@ -169,7 +167,7 @@ func NewLemonInstance(appID int32) *LemonInstance {
 		TickRate:  10,
 	})
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("lemonade: %w", err))
 	}
 
 	instance := &LemonInstance{
@@ -248,7 +246,7 @@ func (i *LemonInstance) JoinRoom(id string) *websocket.Conn {
 
 		data, err := io.ReadAll(t.Body)
 		if err != nil {
-			panic(err)
+			panic(fmt.Errorf("io read: %w", err))
 		}
 		i.Logger.Debug(string(data))
 		return nil

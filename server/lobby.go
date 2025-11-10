@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/google/uuid"
@@ -21,7 +22,7 @@ func NewLobby() *Lobby {
 func CreateLobbyName() string {
 	n, err := coolname.SlugN(3)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("slug: %w", err))
 	}
 	return n
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 
 	"github.com/gorilla/websocket"
@@ -63,12 +64,12 @@ func (m *RoomConnection) Write() {
 	for message := range m.Send {
 		w, err := m.Connection.NextWriter(websocket.TextMessage)
 		if err != nil {
-			panic(err)
+			panic(fmt.Errorf("ws writer: %w", err))
 		}
 		w.Write(message)
 
 		if err := w.Close(); err != nil {
-			panic(err)
+			panic(fmt.Errorf("ws close: %w", err))
 		}
 	}
 }

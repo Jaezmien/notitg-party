@@ -51,8 +51,7 @@ func ScanSongFolder(db *bolt.DB, folder string) error {
 
 	packs, err := os.ReadDir(folder)
 	if err != nil {
-		fmt.Println("error while reading song directory")
-		panic(err)
+		panic(fmt.Errorf("os readdir (folder): %w", err))
 	}
 
 	for _, pack := range packs {
@@ -66,8 +65,7 @@ func ScanSongFolder(db *bolt.DB, folder string) error {
 
 		songs, err := os.ReadDir(filepath.Join(folder, pack.Name()))
 		if err != nil {
-			fmt.Println("error while reading pack folder")
-			panic(err)
+			panic(fmt.Errorf("os readdir (pack): %w", err))
 		}
 
 		for _, song := range songs {
@@ -84,8 +82,7 @@ func ScanSongFolder(db *bolt.DB, folder string) error {
 
 			hash, err := HashSongFolder(p)
 			if err != nil {
-				fmt.Println("error while hashing song folder")
-				panic(err)
+				panic(fmt.Errorf("hash: %w", err))
 			}
 
 			err = db.Update(func(tx *bolt.Tx) error {
@@ -100,8 +97,7 @@ func ScanSongFolder(db *bolt.DB, folder string) error {
 				return nil
 			})
 			if err != nil {
-				fmt.Println("error while updating database")
-				panic(err)
+				panic(fmt.Errorf("db: %w", err))
 			}
 
 			fmt.Printf("hashed %s!\n", song.Name())

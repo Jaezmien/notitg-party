@@ -2,7 +2,7 @@ package main
 
 import (
 	"errors"
-	"log/slog"
+	"fmt"
 	"os"
 
 	"gopkg.in/ini.v1"
@@ -30,17 +30,17 @@ func CreateBlackistIni() {
 
 	section, err := data.NewSection("Blacklisted")
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("ini section: %w", err))
 	}
 
 	_, err = section.NewKey("Folders", "")
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("ini key: %w", err))
 	}
 
 	_, err = section.NewKey("Files", "")
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("ini key: %w", err))
 	}
 
 	data.SaveTo(BlacklistPath)
@@ -49,8 +49,7 @@ func CreateBlackistIni() {
 func ReadBlacklist() {
 	data, err := ini.Load(BlacklistPath)
 	if err != nil {
-		slog.Error("ini error")
-		panic(err)
+		panic(fmt.Errorf("ini: %w", err))
 	}
 	section := data.Section("Blacklisted")
 

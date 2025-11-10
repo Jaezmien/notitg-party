@@ -20,6 +20,6 @@ func MustString(data any) string {
 func MustUnmarshal(data []byte, v any) {
 	err := json.Unmarshal(data, v)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("json: %w", err))
 	}
 }
