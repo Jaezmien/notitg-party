@@ -356,6 +356,8 @@ func main() {
 	}
 
 	instance.Lemon.OnBufferRead = func(l *lemonade.Lemonade, buffer []int32) {
+		instance.Logger.Debug("received buffer", slog.String("buffer", fmt.Sprintf("%v", buffer)))
+
 		// Miscellaneous
 		if buffer[0] == 1 {
 			if buffer[1] == 1 {
