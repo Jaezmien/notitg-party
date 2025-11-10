@@ -164,38 +164,33 @@ end"><children>
 	end"
 	StepP1LeftPressMessageCommand="%function(self)
 		local pn = 1
-		if oplot_spellCards then
-			
-			curcard[pn] = curcard[pn]-1
-			
-			if oplot_hidden[pn] == 1 then
-				self:hidden(0)
-				curcard[pn] = -1
-				oplot_hidden[pn] = -1
+		if oplot_hidden[pn] == 1 then return end
+
+		curcard[pn] = curcard[pn]-1
+
+		if curcard[pn] < -1 then
+			if oplot_spellcards then
+				curcard[pn] = table.getn(oplot_spellcards)
+			else
+				curcard[pn] = 0
 			end
-			
-			if curcard[pn] < -1 then
-				curcard[pn] = table.getn(oplot_spellCards)
-			end
-			MESSAGEMAN:Broadcast( 'UpdateSpellDisplay' );
 		end
+
+		MESSAGEMAN:Broadcast( 'UpdateSpellDisplay' );
 	end"
 	StepP1RightPressMessageCommand="%function(self)
 		local pn = 1
-		if oplot_spellCards then
-		
-			curcard[pn] = curcard[pn]+1
-			
-			if oplot_hidden[pn] == 1 then
-				self:hidden(0)
-				curcard[pn] = -1
-				oplot_hidden[pn] = -1
-			end
-			if curcard[pn] > table.getn(oplot_spellCards) then
-				curcard[pn] = -1
-			end
-			MESSAGEMAN:Broadcast( 'UpdateSpellDisplay' );
+		if oplot_hidden[pn] == 1 then return end
+
+		curcard[pn] = curcard[pn]+1
+
+		if oplot_spellcards and curcard[pn] > table.getn(oplot_spellcards) then
+			curcard[pn] = -1
+		elseif not oplot_spellcards and curcard[pn] > 0 then
+			curcard[pn] = -1
 		end
+
+		MESSAGEMAN:Broadcast( 'UpdateSpellDisplay' );
 	end"
 	><children>
 	
