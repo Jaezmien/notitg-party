@@ -325,6 +325,10 @@ Lemonade:AddListener(2, 'party', function(buffer)
 
 			InitializeMods() -- simply love thing
 
+			-- TODO: Allow players to change their mod options?
+			GAMESTATE:ApplyGameCommand('mod,scalable')
+			GAMESTATE:ApplyGameCommand('mod,failoff')
+
 			SCREENMAN:SetNewScreen('ScreenPartyGameplay')
 		end
 		if jsonData.type == 'room.game.start' then
@@ -392,9 +396,6 @@ Lemonade:AddListener(2, 'party', function(buffer)
 				GAMESTATE:ApplyGameCommand('song,' .. key)
 				GAMESTATE:ApplyGameCommand('style,versus')
 				GAMESTATE:ApplyGameCommand('steps,' .. PARTY_CMD.difficulties[PARTY_CMD.room.difficulty])
-
-				-- TODO: Allow players to change their mod options?
-				GAMESTATE:ApplyGameCommand('mod,scalable')
 			end
 		end
 	end
