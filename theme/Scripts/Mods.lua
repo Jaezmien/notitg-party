@@ -732,7 +732,12 @@ end
 
 function OptionFromEvalPlayerOptions(pn,m)
 	if not Player(pn) then return 0 end
-	local mods = string.lower(Screen():GetChild('PlayerOptionsP'..pn):GetText())
+
+	local mods = ''
+	if Screen():GetChild('PlayerOptionsP'..pn) then
+		mods = string.lower(Screen():GetChild('PlayerOptionsP'..pn):GetText())
+	end
+
 	local s = { string.find(mods,'-*%d*%%*%s*'..m) }
 	if not s[1] then return 0 end
 	if s[2]-s[1] == string.len(m) then return 100 end
