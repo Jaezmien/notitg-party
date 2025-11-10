@@ -577,6 +577,8 @@ func main() {
 		os.Exit(1)
 	}()
 
+	instance.Logger.Info("client is ready!")
+
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 
 	// hmm
