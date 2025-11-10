@@ -8,7 +8,7 @@
 		end"
 		OnCommand="queuecommand,Stop"
 		StopCommand="%function(self)
-			GAMESTATE:SetSongBeat(0)
+			GAMESTATE:SetSongBeat(-2)
 			SCREENMAN:GetTopScreen():PauseGame(true)
 
 			MESSAGEMAN:Broadcast('PartyGameplayReady')
