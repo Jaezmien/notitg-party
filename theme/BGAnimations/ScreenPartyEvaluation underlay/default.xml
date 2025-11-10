@@ -1,59 +1,408 @@
 <ActorFrame><children>
-	<ActorFrame InitCommand="%EvaluationInit" FirstUpdateCommand="%Evaluation" />
-	<ActorFrame Command="queuecommand,Icon" IconCommand="%function() StyleIcon() end" />
-	<ActorFrame
-		Condition="GAMESTATE:IsPlayerEnabled(PLAYER_1)"
-		Command="x,DoublesOffset()"
-	><children>
-		<ActorFrame Command="queuecommand,NonCombos"
-			NonCombosCommand="%function() 
-				if not WayOffs() then SCREENMAN:GetTopScreen():GetChild('BooNumberP1'):settext('    ') end 
-				if not Decents() then SCREENMAN:GetTopScreen():GetChild('GoodNumberP1'):settext('    ') end
-			end"
-		/>
+	<Layer InitCommand="%EvaluationInit" FirstUpdateCommand="%Evaluation" />
 
-		<Layer Type="Quad"
-			OnCommand="diffuse,#1E282F;stretchto,SCREEN_CENTER_X-310,409,SCREEN_CENTER_X-5,443"
-		/>	
-		<Layer Type="Quad"
-			OnCommand="diffuse,#1E282F59;stretchto,SCREEN_CENTER_X-310,320,SCREEN_CENTER_X-5,409"
-		/>	
-	
-		<Layer Type="Quad"
-			OnCommand="diffuse,#1E282F;stretchto,SCREEN_CENTER_X-310,180,SCREEN_CENTER_X-5,355"
-		/>					
-		<Layer Type="Quad"
-			OnCommand="diffuse,#00000077;stretchto,SCREEN_CENTER_X-310,180,SCREEN_CENTER_X-146,240"
-		/>
-	</children></ActorFrame>
-	<ActorFrame
-		Condition="GAMESTATE:IsPlayerEnabled(PLAYER_2)"
-		Command="x,DoublesOffset()"
-	><children>
-		<ActorFrame Command="queuecommand,NonCombos"
-			NonCombosCommand="%function() 
-				if not WayOffs() then SCREENMAN:GetTopScreen():GetChild('BooNumberP2'):settext('    ') end 
-				if not Decents() then SCREENMAN:GetTopScreen():GetChild('GoodNumberP2'):settext('    ') end
-			end"
-		/>
-
-		<Layer Type="Quad"
-			OnCommand="diffuse,#1E282F;stretchto,SCREEN_CENTER_X+5,409,SCREEN_CENTER_X+310,443"
-		/>	
-		<Layer Type="Quad"
-			OnCommand="diffuse,#1E282F59;stretchto,SCREEN_CENTER_X+5,320,SCREEN_CENTER_X+310,409"
-		/>	
-	
-		<Layer Type="Quad"
-			OnCommand="diffuse,#1E282F;stretchto,SCREEN_CENTER_X+5,180,SCREEN_CENTER_X+310,355"
-		/>	
-		<Layer Type="Quad"
-			OnCommand="diffuse,#00000077;stretchto,SCREEN_CENTER_X+146,180,SCREEN_CENTER_X+310,240"
-		/>	
-	</children></ActorFrame>
+	<!-- Banner and Title -->
 	<Layer
-		File="@'../ScreenSelectMusic underlay/Banner'..Color()..'.png'"
-		InitCommand="x,SCREEN_CENTER_X;y,SCREEN_TOP+115;;ZoomToWidth,278;ZoomToHeight,109"
-		OnCommand="ztest,1;diffusealpha,0;linear,0.6;diffusealpha,1"
-	/>
+		Type="ActorFrame"
+		OnCommand="x,SCREEN_CENTER_X*0.5;y,SCREEN_TOP+68"
+	><children>
+		<Layer 
+			Type="Quad"
+			OnCommand="diffuse,#1E282F;zoomto,139*2,20;y,-18;diffusealpha,0.85"
+		/>
+
+		<Layer
+			Type="BitmapText"
+			Font="_misobold small"
+			OnCommand="shadowlength,1;maxwidth,500;y,-24;zoom,.55;diffuse,#FFFFFF"
+			InitCommand="animate,0;queuecommand,Update"
+			CurrentSongChangedMessageCommand="queuecommand,Update"
+			UpdateCommand="%function(self) self:settext(GetSongName()) end"
+		/>
+		<Layer 
+			Type="BitmapText"
+			Font="_misobold small"
+			OnCommand="y,87;zoom,.5;shadowlength,1;diffuse,#FFFFFF"
+			InitCommand="animate,0;playcommand,Update"
+			UpdateCommand="%function(self) SongOptionsLabel(self) end"
+		/>
+
+		<Layer
+			File="@'../ScreenSelectMusic underlay/Banner'..Color()..'.png'"
+			InitCommand="y,47;ZoomToWidth,278;ZoomToHeight,109"
+			OnCommand="ztest,1;diffusealpha,0;linear,0.6;diffusealpha,1"
+		/>
+		<Layer
+			File="@GetBanner()"
+			InitCommand="y,47;ZoomToWidth,278;ZoomToHeight,109"
+			OnCommand="ztest,1;diffusealpha,0;linear,0.6;diffusealpha,1"
+		/>
+	</children></Layer>
+
+	<!-- Frame -->
+	<Layer
+		Type="ActorFrame"
+		OnCommand="xy,SCREEN_CENTER_X-310+(305/2),SCREEN_CENTER_Y+80"
+		PartyEvaluationShowMessageCommand="%function(self)
+			PARTY_CMD.__evalselectionindex = 1
+			local usr = PARTY_CMD:GetOwnUser()
+			if usr then
+				for i,v in ipairs(PARTY_CMD.room.playingUsers) do
+					if v.id == usr.id then
+						PARTY_CMD.__evalselectionindex = i
+						break
+					end
+				end
+			end
+			self:queuecommand('UpdateStats')
+		end"
+		UpdateStatsCommand="%function(self)
+			local pu = PARTY_CMD.room.playingUsers
+			if not pu then return end
+			local pi = PARTY_CMD.__evalselectionindex
+			if not pu[pi] then return end
+
+			local p = pu[pi]
+			local usr = PARTY_CMD:GetOwnUser()
+			if usr and p.id == usr.id then
+				MESSAGEMAN:Broadcast( 'ShowSpellDisplay' )
+				MESSAGEMAN:Broadcast( 'UpdateSpellDisplay' )
+			else
+				MESSAGEMAN:Broadcast( 'HideSpellDisplay' )
+			end
+
+			local maxScore = STATSMAN:GetCurStageStats():GetPlayerStageStats(PLAYER_1):GetPossibleDancePoints()
+			local scorePercent = math.min(math.max(p.score / maxScore, 0), 1)
+
+			-- Set Score
+			local scoreText = string.gsub(FormatPercentScore(scorePercent), '%%', '')
+			self:GetChild('Score'):settext(scoreText)
+
+			-- Set grade
+			local grade = math.max(0, math.min(16, GetGradeFromPercent(scorePercent)))
+			for i,v in pairs(self:GetChild('Grades'):GetChildren()) do
+				v:hidden(1)
+			end
+			local gradeActor = self:GetChild('Grades'):GetChild('Grade' .. (grade + 1))
+			if gradeActor then gradeActor:hidden(0) end
+
+			-- Set judgments
+			local jud = p.judgments
+			if not jud then
+				jud = {}
+				local stats = STATSMAN:GetCurStageStats():GetPlayerStageStats(PLAYER_1)
+
+				jud[1] = stats:GetTapNoteScores(TNS_MARVELOUS)
+				jud[2] = stats:GetTapNoteScores(TNS_PERFECT)
+				jud[3] = stats:GetTapNoteScores(TNS_GREAT)
+				jud[4] = stats:GetTapNoteScores(TNS_GOOD)
+				jud[5] = stats:GetTapNoteScores(TNS_BOO)
+				jud[6] = stats:GetTapNoteScores(TNS_MISS)
+			end
+
+			for i,v in pairs(jud) do
+				local idx = (i-1) * 2
+				local back = self:GetChild('Judgments'):GetChildAt(idx)
+				local front = self:GetChild('Judgments'):GetChildAt(idx + 1)
+
+				local j = v
+				j = math.max(math.min(j, 9999), 0)
+				local digits = string.len(tostring(j))
+
+				back:settext(string.sub('0000', digits + 1) .. string.sub('    ', 1, digits))
+				front:settext(j)
+			end
+		end"
+		StepP1UpPressMessageCommand="playcommand,UpPress"
+		StepP2UpPressMessageCommand="playcommand,UpPress"
+		StepP1DownPressMessageCommand="playcommand,DownPress"
+		StepP2DownPressMessageCommand="playcommand,DownPress"
+		UpPressCommand="%function(self)
+			PARTY_CMD.__evalselectionindex = PARTY_CMD.__evalselectionindex - 1
+			if PARTY_CMD.__evalselectionindex < 1 then
+				PARTY_CMD.__evalselectionindex = 1
+			end
+			self:queuecommand('UpdateStats')	
+		end"
+		DownPressCommand="%function(self)
+			PARTY_CMD.__evalselectionindex = PARTY_CMD.__evalselectionindex + 1
+			if PARTY_CMD.__evalselectionindex > table.getn(PARTY_CMD.room.playingUsers) then
+				PARTY_CMD.__evalselectionindex = table.getn(PARTY_CMD.room.playingUsers) 
+			end
+			self:queuecommand('UpdateStats')	
+		end"
+	><children>
+		<!-- Background -->
+		<Layer
+			Type="Quad"
+			OnCommand="diffuse,#1E282F;zoomto,305,175"
+		/>	
+		<Layer
+			Type="Quad"
+			OnCommand="diffuse,#00000077;zoomto,164,60;horizalign,left;vertalign,top;x,-(305/2);y,-(175/2)"
+		/>
+
+		<!-- Difficulty and Artist -->
+		<Layer Type="ActorFrame"
+		OnCommand="xy,-(305/2)+15,-(175/2)-15"
+		><children>
+			<Actor
+				File="@THEME:GetPath(EC_GRAPHICS,'','_difficulty icons')"
+				InitCommand="%function(self) self:y(IconY()) IconCrop(self) end"
+				OnCommand="animate,0;playcommand,Update"
+				UpdateCommand="%function(self,parent) SetDifficultyFrameFromGameState(self, PLAYER_1) end"
+			/>
+			<Actor
+				Class="DifficultyMeter"
+				Type="ScreenGameplay DifficultyMeterP1"
+				OnCommand="playcommand,Update"
+				UpdateCommand="%function(self) 
+						if GAMESTATE:GetCurrentTrail(PLAYER_1) then 
+							self:SetFromTrail(GAMESTATE:GetCurrentTrail(PLAYER_1)) 
+						else
+							self:SetFromSteps(GAMESTATE:GetCurrentSteps(PLAYER_1))
+						end
+						P1Difficulty = self:GetChild('Difficulty'):GetText()
+					end"
+			/>
+			<Layer 
+				Font="_misobold small"
+				Text="???" 
+				OnCommand="x,25;y,2;zoom,0.4;shadowlength,0;horizalign,left;maxwidth,240;queuecommand,Set" 
+				SetCommand="%function(self) self:settext(P1Difficulty) end" 
+			/>		
+			<Layer 
+				Condition="not GAMESTATE:IsCourseMode()"
+				Font="_misobold small"
+				Text="???" 
+				OnCommand="x,25;y,-12;zoom,0.4;shadowlength,0;horizalign,left;maxwidth,240;queuecommand,Set" 
+				SetCommand="%function(self) self:settext(GetStepsDescriptionText(PLAYER_1)) end" 
+			/>		
+		</children></Layer>
+
+		<!-- Score -->
+		<Layer
+			Type="BitmapText"
+			Font="_wendy white"
+			Name="Score"
+		InitCommand="horizalign,right;shadowlength,0;zoom,0.6;x,4;y,-(175/2)+30"
+		/>
+
+		<!-- Grades -->
+		<Layer
+			Type="ActorFrame"
+			Name="Grades"
+			InitCommand="xy,-(305/2)+80,(175/2)-80+20"
+		><children>
+			<AutoActor
+				File="@THEME:GetPath(EC_GRAPHICS,'ScreenEvaluation','grade Tier01')"
+				Name="Grade1"
+				OnCommand="zoom,0.45;xy,0,0"
+			/>
+			<AutoActor
+				File="@THEME:GetPath(EC_GRAPHICS,'ScreenEvaluation','grade Tier02')"
+				Name="Grade2"
+				OnCommand="zoom,0.45;xy,0,0"
+			/>
+			<AutoActor 
+				File="@THEME:GetPath(EC_GRAPHICS,'ScreenEvaluation','grade Tier03')"
+				Name="Grade3"
+				OnCommand="zoom,0.45;xy,0,0"
+			/>
+			<AutoActor 
+				File="@THEME:GetPath(EC_GRAPHICS,'ScreenEvaluation','grade Tier04')"
+				Name="Grade4"
+				OnCommand="zoom,0.45;xy,0,0"
+			/>
+			<AutoActor 
+				File="@THEME:GetPath(EC_GRAPHICS,'ScreenEvaluation','grade Tier05')"
+				Name="Grade5"
+				OnCommand="zoom,0.45;xy,0,0"
+			/>
+			<AutoActor 
+				File="@THEME:GetPath(EC_GRAPHICS,'ScreenEvaluation','grade Tier06')"
+				Name="Grade6"
+				OnCommand="zoom,0.45;xy,0,0"
+			/>
+			<AutoActor 
+				File="@THEME:GetPath(EC_GRAPHICS,'ScreenEvaluation','grade Tier07')"
+				Name="Grade7"
+				OnCommand="zoom,0.45;xy,0,0"
+			/>
+			<AutoActor 
+				File="@THEME:GetPath(EC_GRAPHICS,'ScreenEvaluation','grade Tier08')"
+				Name="Grade8"
+				OnCommand="zoom,0.45;xy,0,0"
+			/>
+			<AutoActor 
+				File="@THEME:GetPath(EC_GRAPHICS,'ScreenEvaluation','grade Tier09')"
+				Name="Grade9"
+				OnCommand="zoom,0.45;xy,0,0"
+			/>
+			<AutoActor 
+				File="@THEME:GetPath(EC_GRAPHICS,'ScreenEvaluation','grade Tier10')"
+				Name="Grade10"
+				OnCommand="zoom,0.45;xy,0,0"
+			/>
+			<AutoActor 
+				File="@THEME:GetPath(EC_GRAPHICS,'ScreenEvaluation','grade Tier11')"
+				Name="Grade11"
+				OnCommand="zoom,0.45;xy,0,0"
+			/>
+			<AutoActor 
+				File="@THEME:GetPath(EC_GRAPHICS,'ScreenEvaluation','grade Tier12')"
+				Name="Grade12"
+				OnCommand="zoom,0.45;xy,0,0"
+			/>
+			<AutoActor 
+				File="@THEME:GetPath(EC_GRAPHICS,'ScreenEvaluation','grade Tier13')"
+				Name="Grade13"
+				OnCommand="zoom,0.45;xy,0,0"
+			/>
+			<AutoActor 
+				File="@THEME:GetPath(EC_GRAPHICS,'ScreenEvaluation','grade Tier14')"
+				Name="Grade14"
+				OnCommand="zoom,0.45;xy,0,0"
+			/>
+			<AutoActor 
+				File="@THEME:GetPath(EC_GRAPHICS,'ScreenEvaluation','grade Tier15')"
+				Name="Grade15"
+				OnCommand="zoom,0.45;xy,0,0"
+			/>
+			<AutoActor 
+				File="@THEME:GetPath(EC_GRAPHICS,'ScreenEvaluation','grade Tier16')"
+				Name="Grade16"
+				OnCommand="zoom,0.45;xy,0,0"
+			/>
+			<AutoActor 
+				File="@THEME:GetPath(EC_GRAPHICS,'ScreenEvaluation','grade Tier17')"
+				Name="Grade17"
+				OnCommand="zoom,0.45;xy,0,0"
+			/>
+			<AutoActor 
+				File="@THEME:GetPath(EC_GRAPHICS,'ScreenEvaluation','grade failed')"
+				Name="GradeFailed"
+				OnCommand="zoom,0.45;xy,0,0"
+			/>
+		</children></Layer>
+
+		<!-- Judgment Frames -->
+		<Layer Type="ActorFrame" OnCommand="x,78;y,-72"> <children>
+			<Layer Type="BitmapText" Font="_misoreg white" Text="FANTASTIC"	OnCommand="y,27*0;zoom,0.35;horizalign,right;ShadowLength,0" />
+			<Layer Type="BitmapText" Font="_misoreg white" Text="EXCELLENT"	OnCommand="y,27*1;zoom,0.35;horizalign,right;ShadowLength,0" />
+			<Layer Type="BitmapText" Font="_misoreg white" Text="GREAT"		OnCommand="y,27*2;zoom,0.35;horizalign,right;ShadowLength,0" />
+			<Layer Type="BitmapText" Font="_misoreg white" Text="DECENT"	OnCommand="y,27*3;zoom,0.35;horizalign,right;ShadowLength,0" InitCommand="%function(self) if not Decents() then self:diffuse(.5,.5,.5,.5) end end" />
+			<Layer Type="BitmapText" Font="_misoreg white" Text="WAY OFF"	OnCommand="y,27*4;zoom,0.35;horizalign,right;ShadowLength,0" InitCommand="%function(self) if not WayOffs() then self:diffuse(.5,.5,.5,.5) end end" />
+			<Layer Type="BitmapText" Font="_misoreg white" Text="MISS"		OnCommand="y,27*5;zoom,0.35;horizalign,right;ShadowLength,0" />
+		</children> </Layer>
+
+		<!-- Judgment Values -->
+		<Layer Type="ActorFrame" Name="Judgments" OnCommand="x,(305/2)-8;y,-68"> <children>
+			<Layer Type="BitmapText" Font="_wendywhite numbers" Name="FantasticBack" Text="" OnCommand="y,27*0;zoom,0.35;horizalign,right;ShadowLength,0;diffusealpha,0.2" />
+			<Layer Type="BitmapText" Font="_wendywhite numbers" Name="Fantastic" Text="" OnCommand="y,27*0;zoom,0.35;horizalign,right;ShadowLength,0" />
+			<Layer Type="BitmapText" Font="_wendywhite numbers" Name="ExcellentBack" Text="" OnCommand="y,27*1;zoom,0.35;horizalign,right;ShadowLength,0;diffusealpha,0.2" />
+			<Layer Type="BitmapText" Font="_wendywhite numbers" Name="Excellent" Text="" OnCommand="y,27*1;zoom,0.35;horizalign,right;ShadowLength,0" />
+			<Layer Type="BitmapText" Font="_wendywhite numbers" Name="GreatBack" Text="" OnCommand="y,27*2;zoom,0.35;horizalign,right;ShadowLength,0;diffusealpha,0.2" />
+			<Layer Type="BitmapText" Font="_wendywhite numbers" Name="Great" Text="" OnCommand="y,27*2;zoom,0.35;horizalign,right;ShadowLength,0" />
+			<Layer Type="BitmapText" Font="_wendywhite numbers" Name="DecentBack" Text="" OnCommand="y,27*3;zoom,0.35;horizalign,right;ShadowLength,0;diffusealpha,0.2" />
+			<Layer Type="BitmapText" Font="_wendywhite numbers" Name="Decent" Text="" OnCommand="y,27*3;zoom,0.35;horizalign,right;ShadowLength,0" InitCommand="%function(self) if not Decents() then self:diffuse(.5,.5,.5,.5) end end" />
+			<Layer Type="BitmapText" Font="_wendywhite numbers" Name="WayOffBack" Text="" OnCommand="y,27*4;zoom,0.35;horizalign,right;ShadowLength,0;diffusealpha,0.2" />
+			<Layer Type="BitmapText" Font="_wendywhite numbers" Name="WayOff" Text="" OnCommand="y,27*4;zoom,0.35;horizalign,right;ShadowLength,0" InitCommand="%function(self) if not WayOffs() then self:diffuse(.5,.5,.5,.5) end end" />
+			<Layer Type="BitmapText" Font="_wendywhite numbers" Name="MissBack" Text="" OnCommand="y,27*5;zoom,0.35;horizalign,right;ShadowLength,0;diffusealpha,0.2" />
+			<Layer Type="BitmapText" Font="_wendywhite numbers" Name="Miss" Text="" OnCommand="y,27*5;zoom,0.35;horizalign,right;ShadowLength,0" />
+		</children> </Layer>
+
+		<!-- Plot -->
+		<Layer File="plot.xml" Name="Plot" InitCommand="y,32"/>
+	</children> </Layer>
+
+	<!-- Player List -->
+	<Layer
+		Type="ActorFrame"
+		InitCommand="%function(self)
+			self:x(SCREEN_WIDTH - 10)
+
+			local maxScore = STATSMAN:GetCurStageStats():GetPlayerStageStats(PLAYER_1):GetPossibleDancePoints()
+
+			local judColors = {
+				{0,1,1,1},
+				{1,1,90/255,1},
+				{0.43529411764705883,1,0.15294117647058825,1},
+				{0.6392156862745098,0.40784313725490196,0.6431372549019608,1},
+				{1,0.6039215686274509,0.011764705882352941,1},
+				{0.8941176470588236,0,0,1},
+			}
+
+			local w = 280
+			local h = 50
+			local yo = 10
+
+			self:SetDrawFunction(function(self)
+				local selectedIndex = PARTY_CMD.__evalselectionindex
+				if not selectedIndex then return end
+
+				self:y(SCREEN_CENTER_Y - (h + yo) * (selectedIndex - 1))
+
+				local n = self:GetChild('Name')
+				local s = self:GetChild('Score')
+				local j = self:GetChild('Judgment')
+				local b = self:GetChild('Back')
+				local y = 0
+
+				local usr = PARTY_CMD:GetOwnUser()
+				for i,u in ipairs(PARTY_CMD.room.playingUsers) do
+					local x = i == selectedIndex and -20 or 0
+
+					b:stretchto(5, y, w, y + h)
+					b:addx(-w + x)
+					b:diffuse(0.11,0.15,0.18,1)
+					b:Draw()
+					b:stretchto(w-110, y, w, y + h)
+					b:addx(-w + x)
+					b:diffuse(0,0,0,0.3)
+					b:Draw()
+
+					n:x(12)
+					n:y(y + h/2 - 8)
+					n:addx(-w + x)
+					n:zoom(0.5)
+					n:settext(u.username)
+					if usr and usr.id == u.id then
+						self:diffuse(1,1,0.5,1)
+					else
+						self:diffuse(1,1,1,1)
+					end
+					n:Draw()
+
+					s:x(w - 10)
+					s:y(y + h/2)
+					s:addx(-w + x)
+					s:zoom(0.5)
+					s:settext(FormatPercentScore( math.min(math.max(u.score / maxScore, 0), 1) ))
+					s:Draw()
+
+					y = y + h + yo
+				end
+
+			end)
+		end"
+	><children>
+		<Layer
+			Type="Quad"
+			Name="Back"
+		/>
+		<Layer
+			Type="BitmapText"
+			Font="_misoreg white"
+			Name="Name"
+			InitCommand="horizalign,left;shadowlength,0;maxwidth,300"
+		/>
+		<Layer
+			Type="BitmapText"
+			Font="_wendy small"
+			Name="Score"
+			InitCommand="horizalign,right;shadowlength,0"
+		/>
+	</children></Layer>
+
 </children></ActorFrame>
