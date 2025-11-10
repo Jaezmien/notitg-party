@@ -217,7 +217,7 @@
 		Type="BitmapText"
 		Font="_misoreg white"
 		Text="instruction host"
-		OnCommand="xy,SCREEN_WIDTH-30,SCREEN_CENTER_Y+180;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
+		OnCommand="xy,SCREEN_WIDTH-30,SCREEN_CENTER_Y+155;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
 		UpdateCommand="%function(self)
 			if PARTY_CMD:IsUserHost() then
 				if PARTY_CMD:RoomAllReady() and GAMESTATE:GetCurrentSong() then
@@ -243,7 +243,7 @@
 		Type="BitmapText"
 		Font="_misoreg white"
 		Text="instruction player"
-		OnCommand="xy,SCREEN_WIDTH-30,SCREEN_CENTER_Y+90;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
+		OnCommand="xy,SCREEN_WIDTH-30,SCREEN_CENTER_Y+180;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
 		UpdateCommand="%function(self)
 			if GAMESTATE:GetCurrentSong() then
 				local u = PARTY_CMD:GetOwnUser()
@@ -332,6 +332,70 @@
 			self:queuecommand('Update')
 		end"
 	/>
+	<Layer
+		Type="ActorFrame"
+		OnCommand="xy,SCREEN_WIDTH-30-15,SCREEN_CENTER_Y+85;queuecommand,Update"
+		UpdateCommand="sleep,0.02;queuecommand,Update"
+	><children>
+		<Actor
+			File="@THEME:GetPath(EC_GRAPHICS,'','_difficulty icons')"
+			InitCommand="%function(self) self:y(IconY()) IconCrop(self) end"
+			OnCommand="animate,0"
+			UpdateCommand="%function(self,parent)
+				if GAMESTATE:GetCurrentSong() then
+					self:hidden(0)
+					SetDifficultyFrameFromGameState(self, PLAYER_1)
+				else
+					self:hidden(1)
+				end
+			end"
+		/>
+		<Actor
+			Class="DifficultyMeter"
+			Type="ScreenGameplay DifficultyMeterP1"
+			UpdateCommand="%function(self) 
+				if GAMESTATE:GetCurrentSong() then
+					if GAMESTATE:GetCurrentTrail(PLAYER_1) then 
+						self:SetFromTrail(GAMESTATE:GetCurrentTrail(PLAYER_1)) 
+					else
+						self:SetFromSteps(GAMESTATE:GetCurrentSteps(PLAYER_1))
+					end
+
+					P1Difficulty = self:GetChild('Difficulty'):GetText()
+					self:hidden(0)
+				else
+					self:hidden(1)
+				end
+			end"
+		/>
+		<Layer 
+			Font="_misobold small"
+			Text="???" 
+			OnCommand="x,-25;y,2;zoom,0.4;shadowlength,0;horizalign,right;maxwidth,240" 
+			UpdateCommand="%function(self)
+				if GAMESTATE:GetCurrentSong() then
+					self:settext(P1Difficulty)
+					self:hidden(0)
+				else
+					self:hidden(1)
+				end
+			end" 
+		/>		
+		<Layer 
+			Condition="not GAMESTATE:IsCourseMode()"
+			Font="_misobold small"
+			Text="???" 
+			OnCommand="x,-25;y,-12;zoom,0.4;shadowlength,0;horizalign,right;maxwidth,240"
+			UpdateCommand="%function(self)
+				if GAMESTATE:GetCurrentSong() then
+					self:settext(GetStepsDescriptionText(PLAYER_1))
+					self:hidden(0)
+				else
+					self:hidden(1)
+				end
+			end" 
+		/>		
+	</children></Layer>
 
 	<Layer
 		Type="ActorSound"

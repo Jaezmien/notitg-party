@@ -136,7 +136,7 @@ end
 
 
 function SetDifficultyFrameFromSteps( Actor, pn )
-	Trace( "SetDifficultyFrameFromSteps" )
+	-- Trace( "SetDifficultyFrameFromSteps" )
 	local steps = GAMESTATE:GetCurrentSteps( pn );
 	if steps then 
 		Actor:setstate(steps:GetDifficulty()) 
@@ -144,7 +144,7 @@ function SetDifficultyFrameFromSteps( Actor, pn )
 end
 
 function SetDifficultyFrameFromGameState( Actor, pn )
-	Trace( "SetDifficultyFrameFromGameState" )
+	-- Trace( "SetDifficultyFrameFromGameState" )
 	local trail = GAMESTATE:GetCurrentTrail( pn );
 	if trail then 
 		Actor:setstate(trail:GetDifficulty()) 
