@@ -80,21 +80,28 @@ func init() {
 	}
 	BlacklistPath = filepath.Join(wd, "blacklist.ini")
 
-	ok, err := CheckBlacklist()
-	if err != nil {
-		fmt.Println("error with os")
-		panic(err)
-	}
-	if !ok {
-		fmt.Println("It seems like blacklist.ini is missing!")
+	for {
+		ok, err := CheckBlacklist()
+
+		if err != nil {
+			fmt.Println("error with os")
+			panic(err)
+		}
+
+		if ok {
+			break
+		}
+
+		fmt.Println("[Blacklist] It seems like blacklist.ini is missing!")
 
 		CreateBlackistIni()
 
-		fmt.Println("Created the default blacklist.ini file!")
-		fmt.Println("Please run the application again after configuring it to your likings.")
+		fmt.Println("[Blacklist] Created the default blacklist.ini file!")
+		fmt.Println("[Blacklist] Please configure the blacklist.ini to your liking, then press Enter to continue.")
 
-		os.Exit(0)
+		bufio.NewReader(os.Stdin).ReadBytes('\n')
 	}
+
 	ReadBlacklist()
 }
 
