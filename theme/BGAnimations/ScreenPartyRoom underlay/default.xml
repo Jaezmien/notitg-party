@@ -150,10 +150,29 @@
 	</children></Layer>
 
 	<Layer
+		Type="Quad"
+		InitCommand="hidden,1"
+		Name="song beat"
+		PartyRoomSongMessageCommand="stoptweening;queuecommand,Update"
+		UpdateCommand="%function(self)
+			local p = self:GetParent():GetChild('song preview')
+			if p and p:get() then
+				local t = p:get():GetSoundPosition()	
+				local s = GAMESTATE:GetCurrentSong()
+				local b = s:GetBeatFromElapsedTime(t)
+				self:aux(b)
+			end
+			self:sleep(0.02)
+			self:queuecommand('Update')
+		end"
+		PartyRoomNoSongMessageCommand="stoptweening;aux,0"
+	/>
+
+	<Layer
 		Type="BitmapText"
 		Font="_misoreg white"
 		Text="instruction host"
-		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y+180;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;diffuseblink;effectcolor1,1,1,1,1;effectcolor2,1,1,1,0.5;queuecommand,Update"
+		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y+180;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
 		UpdateCommand="%function(self)
 			if PARTY_CMD:IsUserHost() then
 				if PARTY_CMD:RoomAllReady() and GAMESTATE:GetCurrentSong() then
@@ -165,6 +184,10 @@
 				self:settext('')
 			end
 
+			local b = self:GetParent():GetChild('song beat'):getaux()
+			local bt = math.mod(b, 1)
+			if bt > 0.5 then self:diffuse(1,1,1,1) else self:diffuse(1,1,1,0.5) end
+
 			self:sleep(0.02)
 			self:queuecommand('Update')
 		end"
@@ -173,7 +196,7 @@
 		Type="BitmapText"
 		Font="_misoreg white"
 		Text="instruction player"
-		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y+90;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;diffuseblink;effectcolor1,1,1,1,1;effectcolor2,1,1,1,0.5;queuecommand,Update"
+		OnCommand="xy,SCREEN_WIDTH-40,SCREEN_CENTER_Y+90;horizalign,right;zoom,0.4;maxwidth,SCREEN_WIDTH*1.75;queuecommand,Update"
 		UpdateCommand="%function(self)
 			if GAMESTATE:GetCurrentSong() then
 				local u = PARTY_CMD:GetOwnUser()
@@ -200,6 +223,10 @@
 					self:settext('')
 				end
 			end
+
+			local b = self:GetParent():GetChild('song beat'):getaux()
+			local bt = math.mod(b, 1)
+			if bt > 0.5 then self:diffuse(1,1,1,1) else self:diffuse(1,1,1,0.5) end
 
 			self:sleep(0.02)
 			self:queuecommand('Update')
@@ -285,6 +312,7 @@
 	<Layer
 		Type="ActorSound"
 		File="silent.ogg"
+		Name="song preview"
 		OnCommand="queuecommand,Update"
 		UpdateCommand="%function(self)
 			local sound = self:get()
@@ -296,20 +324,19 @@
 				local ma = mi + song:GetSampleLengthSeconds()
 
 				local vol = 0.7
-				local fadelen = 1
+				local fadelen = 0.5
 				if p > ma - 1 then
 					local start = ma - fadelen
 					local len = ma - mi
-					local t = (p - start) / fadelen
-					vol = math.max(0, math.min(1 - t, 1)) * vol
+					local t = math.max(0, math.min(1, (p - start) / fadelen))
+					local et = t*t -- inQuad
+					vol = (1-et) * vol
 				end
 				sound:volume(vol)
 
-				if p < mi or p >= ma - 0.1 then
-					self:pause(true)
+				if p >= ma then
 					sound:SetSoundPosition(mi)
-					self:pause(false)
-					self:sleep(1)
+					self:sleep(1.0)
 				end
 			end
 
