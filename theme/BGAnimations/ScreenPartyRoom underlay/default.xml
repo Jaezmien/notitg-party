@@ -65,8 +65,56 @@
 		end
 	end"
 ><children>
+	<!-- Miscellaneous Values -->
+	<Layer
+		Type="Quad"
+		Name="song state manager"
+		OnCommand="%function(self)
+			PARTY_CMD.__roomsong = nil 
+
+			self:hidden(1)
+			self:queuecommand('Update')
+		end"
+		UpdateCommand="%function(self)
+			if GAMESTATE:GetCurrentSong() then
+				if PARTY_CMD.__roomsong ~= GAMESTATE:GetCurrentSong() then
+					PARTY_CMD.__roomsong = GAMESTATE:GetCurrentSong()
+					MESSAGEMAN:Broadcast('PartyRoomSong')
+				end
+			else
+				if PARTY_CMD.__roomsong ~= nil then
+					PARTY_CMD.__roomsong = nil 
+					MESSAGEMAN:Broadcast('PartyRoomNoSong')
+				end
+			end
+
+			self:sleep(0.02)
+			self:queuecommand('Update')
+		end"
+	/>
+	<Layer
+		Type="Quad"
+		InitCommand="hidden,1"
+		Name="song beat"
+		PartyRoomSongMessageCommand="stoptweening;queuecommand,Update"
+		UpdateCommand="%function(self)
+			local p = self:GetParent():GetChild('song preview')
+			if p and p:get() then
+				local t = p:get():GetSoundPosition()	
+				local s = GAMESTATE:GetCurrentSong()
+				local b = s:GetBeatFromElapsedTime(t)
+				self:aux(b)
+			end
+			self:sleep(0.02)
+			self:queuecommand('Update')
+		end"
+		PartyRoomNoSongMessageCommand="stoptweening;aux,0"
+	/>
+
+	<!-- Background -->
 	<Layer
 		Type="Sprite"
+		Name="song background"
 		PartyRoomSongMessageCommand="%function(self)
 			local song = GAMESTATE:GetCurrentSong()
 			
@@ -84,6 +132,7 @@
 		end"
 	/>
 
+	<!-- Room Details -->
 	<Layer
 		Type="BitmapText"
 		Font="_wendy white"
@@ -95,7 +144,6 @@
 			self:queuecommand('Update')
 		end"
 	/>
-
 	<Layer
 		Type="BitmapText"
 		Font="_wendy white"
@@ -108,10 +156,11 @@
 		end"
 	/>
 
+	<!-- Room Players -->
 	<Layer
 		Type="BitmapText"
 		Font="_wendy white"
-		Text="username"
+		Text="room user"
 		OnCommand="xy,20,60;horizalign,left;zoom,0.5;queuecommand,Update"
 		UpdateCommand="%function(self)
 			local u = PARTY_CMD:GetOwnUser()
@@ -136,6 +185,7 @@
 
 	<Layer
 		Type="ActorFrame"
+		Name="room players"
 		InitCommand="xy,20,100"
 		OnCommand="%function(self)
 			self:SetDrawFunction(PARTY_CMD.renderRoomUsers)
@@ -149,25 +199,7 @@
 		/>
 	</children></Layer>
 
-	<Layer
-		Type="Quad"
-		InitCommand="hidden,1"
-		Name="song beat"
-		PartyRoomSongMessageCommand="stoptweening;queuecommand,Update"
-		UpdateCommand="%function(self)
-			local p = self:GetParent():GetChild('song preview')
-			if p and p:get() then
-				local t = p:get():GetSoundPosition()	
-				local s = GAMESTATE:GetCurrentSong()
-				local b = s:GetBeatFromElapsedTime(t)
-				self:aux(b)
-			end
-			self:sleep(0.02)
-			self:queuecommand('Update')
-		end"
-		PartyRoomNoSongMessageCommand="stoptweening;aux,0"
-	/>
-
+	<!-- Instructions -->
 	<Layer
 		Type="BitmapText"
 		Font="_misoreg white"
@@ -233,6 +265,7 @@
 		end"
 	/>
 
+	<!-- Song Details -->
 	<Layer
 		Type="BitmapText"
 		Font="_misobold outline"
@@ -278,32 +311,6 @@
 			else
 				self:settext('')
 			end
-			self:sleep(0.02)
-			self:queuecommand('Update')
-		end"
-	/>
-
-	<Layer
-		Type="Quad"
-		OnCommand="%function(self)
-			PARTY_CMD.__roomsong = nil 
-
-			self:hidden(1)
-			self:queuecommand('Update')
-		end"
-		UpdateCommand="%function(self)
-			if GAMESTATE:GetCurrentSong() then
-				if PARTY_CMD.__roomsong ~= GAMESTATE:GetCurrentSong() then
-					PARTY_CMD.__roomsong = GAMESTATE:GetCurrentSong()
-					MESSAGEMAN:Broadcast('PartyRoomSong')
-				end
-			else
-				if PARTY_CMD.__roomsong ~= nil then
-					PARTY_CMD.__roomsong = nil 
-					MESSAGEMAN:Broadcast('PartyRoomNoSong')
-				end
-			end
-
 			self:sleep(0.02)
 			self:queuecommand('Update')
 		end"
@@ -365,8 +372,10 @@
 		end"
 	/>
 
+	<!-- Banner -->
 	<Layer
 		Type="Sprite"
+		Name="song banner"
 		PartyRoomSongMessageCommand="%function(self)
 			local song = GAMESTATE:GetCurrentSong()
 			
