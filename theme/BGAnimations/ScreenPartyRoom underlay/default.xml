@@ -368,6 +368,8 @@
 			self:queuecommand('Update')
 		end"
 		PartyRoomSongMessageCommand="%function(self)
+			if not PARTY_CMD.GetPartyProfile().SongPreview then return end
+
 			local song = GAMESTATE:GetCurrentSong()
 
 			self:stop()

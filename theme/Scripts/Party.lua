@@ -415,6 +415,7 @@ local function GetPartyProfile()
 			LeaderboardAlign = 'top',
 			ReducedEffects = false,
 			ShowLeaderboard = true,
+			SongPreview = true,
 		}
 	end
 
@@ -473,6 +474,22 @@ PARTY_CMD.Options = {
 			local p = GetPartyProfile()
 
 			p.ReducedEffects = list[2] == true
+		end
+		return r
+	end,
+	SongPreview = function()
+		local r = OptionRowBase('SongPreview')
+		r.OneChoiceForAllPlayers = true
+		r.Choices = { 'Enabled', 'Disabled' }
+		r.LoadSelections = function(self,list, pn)
+			local p = GetPartyProfile()
+
+			list[p.SongPreview and 1 or 2] = true
+		end
+		r.SaveSelections = function(self,list, pn)
+			local p = GetPartyProfile()
+
+			p.SongPreview = list[1] == true
 		end
 		return r
 	end
