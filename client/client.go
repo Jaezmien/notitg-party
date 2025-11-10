@@ -75,8 +75,7 @@ func init() {
 func init() {
 	wd, err := os.Getwd()
 	if err != nil {
-		fmt.Println("error with os")
-		panic(err)
+		panic(fmt.Errorf("error with os: %w", err))
 	}
 	BlacklistPath = filepath.Join(wd, "blacklist.ini")
 
@@ -84,8 +83,7 @@ func init() {
 		ok, err := CheckBlacklist()
 
 		if err != nil {
-			fmt.Println("error with os")
-			panic(err)
+			panic(fmt.Errorf("error with os: %w", err))
 		}
 
 		if ok {
@@ -220,7 +218,7 @@ func (i *LemonInstance) Close() {
 func (i *LemonInstance) SendString(data string, prefix []int32) {
 	buff, err := lemonade.EncodeStringToBuffer(data)
 	if err != nil {
-		panic("encode:" + err.Error())
+		panic(fmt.Errorf("encode: %w", err))
 	}
 
 	i.Lemon.WriteBuffer(append(prefix, buff...))
@@ -267,16 +265,16 @@ func (i *LemonInstance) JoinRoom(id string) *websocket.Conn {
 func (i *LemonInstance) CreateRoom() string {
 	p, err := url.JoinPath(Server, "/room/create")
 	if err != nil {
-		panic("join:" + err.Error())
+		panic(fmt.Errorf("join: %w", err))
 	}
 	res, err := http.Post(p, "", nil)
 	if err != nil {
-		panic("post:" + err.Error())
+		panic(fmt.Errorf("http post: %w", err))
 	}
 
 	var data struct{ ID string }
 	if err := json.NewDecoder(res.Body).Decode(&data); err != nil {
-		panic("json:" + err.Error())
+		panic(fmt.Errorf("json: %w", err))
 	}
 
 	return data.ID
@@ -335,7 +333,7 @@ func main() {
 
 	db, err := bolt.Open(HashDBPath, 0600, nil)
 	if err != nil {
-		panic("db: " + err.Error())
+		panic(fmt.Errorf("db: %w", err))
 	}
 	defer db.Close()
 
@@ -420,7 +418,7 @@ func main() {
 				// The following buffer content is the room UUID
 				uuid, err := lemonade.DecodeBufferToString(buffer[2:])
 				if err != nil {
-					panic("decode:" + err.Error())
+					panic(fmt.Errorf("decode: %w", err))
 				}
 				instance.JoinRoom(uuid)
 				return
@@ -442,7 +440,7 @@ func main() {
 
 				message, err := lemonade.DecodeBufferToString(buffer[2:])
 				if err != nil {
-					panic("decode:" + err.Error())
+					panic(fmt.Errorf("decode: %w", err))
 				}
 
 				// Attempt to read json data
@@ -478,7 +476,7 @@ func main() {
 
 				hash, err := lemonade.DecodeBufferToString(buffer[2:])
 				if err != nil {
-					panic("decode:" + err.Error())
+					panic(fmt.Errorf("decode: %w", err))
 				}
 
 				// Verify it, and whatever the result is, send it to the server.
@@ -502,7 +500,7 @@ func main() {
 				// We have a song key! Let's send it to NotITG.
 				data, err := lemonade.EncodeStringToBuffer(song)
 				if err != nil {
-					panic("encode:" + err.Error())
+					panic(fmt.Errorf("encode: %w", err))
 				}
 
 				l.WriteBuffer(append([]int32{3, 1, 2}, data...))

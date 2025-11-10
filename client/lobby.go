@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -16,7 +17,7 @@ func (i *LemonInstance) PollLobby() {
 		if !i.IsInRoom() {
 			p, err := url.JoinPath(Server, "/")
 			if err != nil {
-				panic("join:" + err.Error())
+				panic(fmt.Errorf("join: %w", err))
 			}
 			res, err := http.Get(p)
 			if err != nil {
@@ -33,12 +34,12 @@ func (i *LemonInstance) PollLobby() {
 
 			d, err := io.ReadAll(res.Body)
 			if err != nil {
-				panic("read:" + err.Error())
+				panic(fmt.Errorf("read: %w", err))
 			}
 
 			buff, err := lemonade.EncodeStringToBuffer(string(d))
 			if err != nil {
-				panic("encode:" + err.Error())
+				panic(fmt.Errorf("encode: %w", err))
 			}
 
 			buff = append([]int32{2, 1}, buff...)

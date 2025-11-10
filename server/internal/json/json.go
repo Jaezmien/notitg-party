@@ -1,11 +1,14 @@
 package json
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 func MustByte(data any) []byte {
 	res, err := json.Marshal(data)
 	if err != nil {
-		panic("json:" + err.Error())
+		panic(fmt.Errorf("json: %w", err))
 	}
 	return res
 }
