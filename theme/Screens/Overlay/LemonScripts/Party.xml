@@ -65,6 +65,8 @@
 				end
 
 				local function render(s)
+					if not PARTY_CMD.GetPartyProfile().ShowLeaderboard then return end
+
 					local bottom = PARTY_CMD.GetPartyProfile().LeaderboardAlign == 'bottom'
 
 					local n = s:GetChild('Name')

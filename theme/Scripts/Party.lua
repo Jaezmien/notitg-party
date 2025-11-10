@@ -413,6 +413,7 @@ local function GetPartyProfile()
 		p.PARTY = {
 			LeaderboardAlign = 'top',
 			ReducedEffects = false,
+			ShowLeaderboard = true,
 		}
 	end
 
@@ -426,6 +427,22 @@ function PARTY_CMD.SetPartyProfile(t)
 end
 
 PARTY_CMD.Options = {
+	ShowLeaderboard = function()
+		local r = OptionRowBase('ShowLeaderboard')
+		r.OneChoiceForAllPlayers = true
+		r.Choices = { 'Show', 'Hide' }
+		r.LoadSelections = function(self,list, pn)
+			local p = GetPartyProfile()
+
+			list[p.ShowLeaderboard and 1 or 2] = true
+		end
+		r.SaveSelections = function(self,list, pn)
+			local p = GetPartyProfile()
+
+			p.ShowLeaderboard = list[1] == true
+		end
+		return r
+	end,
 	LeaderboardAlign = function()
 		local r = OptionRowBase('LeaderboardAlign')
 		r.OneChoiceForAllPlayers = true
