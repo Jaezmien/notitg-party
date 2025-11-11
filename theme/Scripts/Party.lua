@@ -55,7 +55,7 @@ function PARTY_CMD:ResetRoomData()
 
 	PARTY_CMD.room.hasSong = true
 
-	PARTY_CMD.room.difficulty = DIFFICULTY_BEGINNER
+	PARTY_CMD.room.difficulty = ''
 end
 
 function PARTY_CMD:IsInRoom()
@@ -166,7 +166,7 @@ function PARTY_CMD:GameplayFinish()
 
 	local stats = STATSMAN:GetCurStageStats():GetPlayerStageStats(PLAYER_1)
 
-	local score = math.max(0,stats:GetActualDancePoints())
+	local score = math.max(0, stats:GetActualDancePoints())
 	local marvelous = stats:GetTapNoteScores(TNS_MARVELOUS)
 	local perfect = stats:GetTapNoteScores(TNS_PERFECT)
 	local great = stats:GetTapNoteScores(TNS_GREAT)
@@ -191,8 +191,18 @@ function PARTY_CMD:SetNewSong()
 
 	local jsonData = {
 		key = folder .. '/' .. file,
-		difficulty = GAMESTATE:PlayerDifficulty(PLAYER_1)
+		difficulty = nil
 	}
+
+	local diffIndex = GAMESTATE:PlayerDifficulty(PLAYER_1)
+	if diffIndex == DIFFICULTY_EDIT then
+		jsonData.difficulty = GAMESTATE:GetCurrentSteps(PLAYER_1):GetDescription()
+	else
+		jsonData.difficulty = PARTY_CMD.difficulties[diffIndex]
+	end
+
+	print(diffIndex)
+	show(jsonData.difficulty)
 
 	local data = Lemonade:Encode(json.encode(jsonData))
 	table.insert(data, 1, 2) -- {2, data...}
@@ -392,10 +402,33 @@ Lemonade:AddListener(2, 'party', function(buffer)
 				local rawData = popBuffer(buffer, 3)
 				local key = Lemonade:Decode(rawData)
 
+				print('setting song', key)
+				print('setting difficulty', PARTY_CMD.room.difficulty)
+
 				GAMESTATE:ApplyGameCommand('playmode,regular')
-				GAMESTATE:ApplyGameCommand('song,' .. key)
 				GAMESTATE:ApplyGameCommand('style,versus')
-				GAMESTATE:ApplyGameCommand('steps,' .. PARTY_CMD.difficulties[PARTY_CMD.room.difficulty])
+				GAMESTATE:ApplyGameCommand('song,' .. key)
+
+				-- somehow not working with edit difficulties ?? ? ? ??
+				-- GAMESTATE:ApplyGameCommand('steps,' .. PARTY_CMD.room.difficulty)
+
+				-- HACK: Set steps by combing through the current song's steps instead.
+				local steps
+				for _, s in ipairs(GAMESTATE:GetCurrentSong():GetAllSteps()) do
+					local d = s:GetDifficulty() == DIFFICULTY_EDIT
+								and s:GetDescription()
+								or PARTY_CMD.difficulties[s:GetDifficulty()]
+
+					if d == PARTY_CMD.room.difficulty then
+						steps = s
+						break
+					end
+				end
+
+				if steps then
+					GAMESTATE:SetCurrentSteps(PLAYER_1, steps)
+					GAMESTATE:SetCurrentSteps(PLAYER_2, steps)
+				end
 			end
 		end
 	end
@@ -433,12 +466,12 @@ PARTY_CMD.Options = {
 		local r = OptionRowBase('ShowLeaderboard')
 		r.OneChoiceForAllPlayers = true
 		r.Choices = { 'Show', 'Hide' }
-		r.LoadSelections = function(self,list, pn)
+		r.LoadSelections = function(self, list, pn)
 			local p = GetPartyProfile()
 
 			list[p.ShowLeaderboard and 1 or 2] = true
 		end
-		r.SaveSelections = function(self,list, pn)
+		r.SaveSelections = function(self, list, pn)
 			local p = GetPartyProfile()
 
 			p.ShowLeaderboard = list[1] == true
@@ -449,12 +482,12 @@ PARTY_CMD.Options = {
 		local r = OptionRowBase('LeaderboardAlign')
 		r.OneChoiceForAllPlayers = true
 		r.Choices = { 'Top', 'Bottom' }
-		r.LoadSelections = function(self,list, pn)
+		r.LoadSelections = function(self, list, pn)
 			local p = GetPartyProfile()
 
 			list[p.LeaderboardAlign == 'top' and 1 or 2] = true
 		end
-		r.SaveSelections = function(self,list, pn)
+		r.SaveSelections = function(self, list, pn)
 			local p = GetPartyProfile()
 
 			p.LeaderboardAlign = list[1] and 'top' or 'bottom'
@@ -465,12 +498,12 @@ PARTY_CMD.Options = {
 		local r = OptionRowBase('ReducedEffects')
 		r.OneChoiceForAllPlayers = true
 		r.Choices = { 'More Effects', 'Reduce Effects' }
-		r.LoadSelections = function(self,list, pn)
+		r.LoadSelections = function(self, list, pn)
 			local p = GetPartyProfile()
 
 			list[p.ReducedEffects and 2 or 1] = true
 		end
-		r.SaveSelections = function(self,list, pn)
+		r.SaveSelections = function(self, list, pn)
 			local p = GetPartyProfile()
 
 			p.ReducedEffects = list[2] == true
@@ -481,12 +514,12 @@ PARTY_CMD.Options = {
 		local r = OptionRowBase('SongPreview')
 		r.OneChoiceForAllPlayers = true
 		r.Choices = { 'Enabled', 'Disabled' }
-		r.LoadSelections = function(self,list, pn)
+		r.LoadSelections = function(self, list, pn)
 			local p = GetPartyProfile()
 
 			list[p.SongPreview and 1 or 2] = true
 		end
-		r.SaveSelections = function(self,list, pn)
+		r.SaveSelections = function(self, list, pn)
 			local p = GetPartyProfile()
 
 			p.SongPreview = list[1] == true

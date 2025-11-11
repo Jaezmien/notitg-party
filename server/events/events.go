@@ -42,7 +42,7 @@ type Title struct {
 }
 type SetSong struct {
 	Hash       string `json:"hash"`
-	Difficulty int    `json:"difficulty"`
+	Difficulty string `json:"difficulty"`
 }
 type BaseState struct {
 	State int `json:"state"`
@@ -158,7 +158,7 @@ func NewRoomHostEvent(id string) []byte {
 	)
 }
 
-func NewRoomSongEvent(hash string, difficulty int) []byte {
+func NewRoomSongEvent(hash string, difficulty string) []byte {
 	return newEvent(
 		"room.info.song",
 		SetSong{hash, difficulty},
@@ -170,10 +170,6 @@ func ParseRoomSongEvent(raw json.RawMessage) (SetSong, error) {
 	err := json.Unmarshal(raw, &data)
 	if err != nil {
 		return data, fmt.Errorf("invalid json data: %w", err)
-	}
-
-	if data.Difficulty < 0 {
-		return data, fmt.Errorf("invalid difficulty")
 	}
 
 	return data, nil

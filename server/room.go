@@ -30,7 +30,7 @@ type Room struct {
 	State RoomState
 
 	SongHash       string
-	SongDifficulty int
+	SongDifficulty string
 
 	Clients   map[*Client]bool
 	Broadcast chan []byte
@@ -390,7 +390,7 @@ func (r *Room) BroadcastHost() {
 	}
 }
 
-func (r *Room) SetSong(hash string, difficulty int) {
+func (r *Room) SetSong(hash string, difficulty string) {
 	r.SongHash = hash
 	r.SongDifficulty = difficulty
 

@@ -288,7 +288,7 @@ func main() {
 				// Attempt to read json data
 				var songData struct {
 					Key        string `json:"key"`
-					Difficulty int    `json:"difficulty"`
+					Difficulty string `json:"difficulty"`
 				}
 
 				if err := json.Unmarshal([]byte(message), &songData); err != nil {

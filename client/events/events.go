@@ -18,10 +18,10 @@ func newEvent(t string, data any) []byte {
 
 type SongEventData struct {
 	Hash       string `json:"hash"`
-	Difficulty int    `json:"difficulty"`
+	Difficulty string `json:"difficulty"`
 }
 
-func NewSetSongEvent(hash string, difficulty int) []byte {
+func NewSetSongEvent(hash string, difficulty string) []byte {
 	return newEvent(
 		"room.song",
 		SongEventData{
