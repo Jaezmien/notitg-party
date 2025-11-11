@@ -201,9 +201,6 @@ function PARTY_CMD:SetNewSong()
 		jsonData.difficulty = PARTY_CMD.difficulties[diffIndex]
 	end
 
-	print(diffIndex)
-	show(jsonData.difficulty)
-
 	local data = Lemonade:Encode(json.encode(jsonData))
 	table.insert(data, 1, 2) -- {2, data...}
 	table.insert(data, 1, 3) -- {3, 2, data...}
@@ -401,9 +398,6 @@ Lemonade:AddListener(2, 'party', function(buffer)
 				-- Let's prepare the ApplyGameCommands!
 				local rawData = popBuffer(buffer, 3)
 				local key = Lemonade:Decode(rawData)
-
-				print('setting song', key)
-				print('setting difficulty', PARTY_CMD.room.difficulty)
 
 				GAMESTATE:ApplyGameCommand('playmode,regular')
 				GAMESTATE:ApplyGameCommand('style,versus')
