@@ -138,7 +138,7 @@ func init() {
 
 func main() {
 	for strings.TrimSpace(Username) == "" {
-		Username = strings.TrimSpace(utils.GetTextInput("Insert your username"))
+		Username = strings.TrimSpace(utils.GetTextInput("Insert your username", 16))
 	}
 
 	instance := NewLemonInstance(AppID)

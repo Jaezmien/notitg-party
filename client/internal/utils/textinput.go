@@ -15,11 +15,13 @@ type TextModel struct {
 	Prompt string
 }
 
-func NewTextModel(prompt string) TextModel {
+func NewTextModel(prompt string, limit int) TextModel {
 	ti := textinput.New()
 	ti.Focus()
-	ti.CharLimit = 16
-	ti.Width = 20
+	ti.CharLimit = limit
+	if limit != 0 {
+		ti.Width = 20
+	}
 
 	return TextModel{
 		input:  ti,
@@ -60,8 +62,8 @@ func (m TextModel) View() string {
 	) + "\n"
 }
 
-func GetTextInput(prompt string) string {
-	m := NewTextModel(prompt)
+func GetTextInput(prompt string, limit int) string {
+	m := NewTextModel(prompt, limit)
 	p := tea.NewProgram(&m)
 
 	if _, err := p.Run(); err != nil {
