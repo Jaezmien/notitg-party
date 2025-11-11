@@ -104,6 +104,8 @@ func init() {
 	}
 	HashDBPath = filepath.Join(wd, "cache.db")
 
+	hasDB, _ := utils.FileExists(HashDBPath)
+
 	db, err := bolt.Open(HashDBPath, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		panic(fmt.Errorf("db: %w", err))
@@ -114,16 +116,17 @@ func init() {
 		panic(fmt.Errorf("db: %w", err))
 	}
 
+	if !hasDB {
+		fmt.Println("It seems like you don't have a song cache yet!")
+		SongsPath = utils.GetTextInput("Insert your NotITG's Song folder path", 0)
+	} else if hasDB && CountSongs(db) == 0 {
+		fmt.Println("It seems like your song cache is empty!")
+		SongsPath = utils.GetTextInput("Insert your NotITG's Song folder path", 0)
+	}
+
 	if SongsPath != "" {
 		if err := ScanSongFolder(db, SongsPath); err != nil {
 			panic(fmt.Errorf("song folder scan: %w", err))
-		}
-
-		os.Exit(0)
-	} else {
-		count := CountSongs(db)
-		if count == 0 {
-			panic("counted 0 songs! make sure you have ran -scan")
 		}
 	}
 }
