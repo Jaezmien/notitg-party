@@ -6,6 +6,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type TextModel struct {
@@ -58,9 +59,11 @@ func (m *TextModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m TextModel) View() string {
+	headerStyle := lipgloss.NewStyle().Bold(true).Background(lipgloss.Color("15")).Foreground(lipgloss.Color("0"))
+
 	return fmt.Sprintf(
-		"%s\n\n%s",
-		m.Prompt,
+		"%s\n%s",
+		headerStyle.Render(m.Prompt),
 		m.input.View(),
 	) + "\n"
 }
