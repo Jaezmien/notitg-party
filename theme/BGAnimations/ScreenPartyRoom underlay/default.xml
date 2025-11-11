@@ -56,6 +56,9 @@
 	DebounceCommand="%function(self)
 		if PARTY_CMD:IsUserHost() then
 			if not PARTY_CMD:RoomAllReady() then
+				-- i'd force style,single here so that it makes sense
+				-- but i keep getting 'too many players joined for ONE_PLAYER_ONE_CREDIT'
+				-- oh well
 				GAMESTATE:ApplyGameCommand('playmode,regular')
 				GAMESTATE:ApplyGameCommand('style,versus')
 				SCREENMAN:SetNewScreen('ScreenPartySelectMusic')
