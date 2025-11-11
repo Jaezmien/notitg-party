@@ -117,14 +117,36 @@ func init() {
 	}
 
 	if !hasDB {
-		fmt.Println("It seems like you don't have a song cache yet!")
+		fmt.Println("[Cache] It seems like you don't have a song cache yet!")
 		SongsPath = utils.GetTextInput("Insert your NotITG's Song folder path", 0)
 	} else if hasDB && CountSongs(db) == 0 {
-		fmt.Println("It seems like your song cache is empty!")
+		fmt.Println("[Cache] It seems like your song cache is empty!")
 		SongsPath = utils.GetTextInput("Insert your NotITG's Song folder path", 0)
 	}
 
 	if SongsPath != "" {
+		for {
+			valid, err := IsValidSongDirectory(SongsPath)
+			if err != nil {
+				panic(fmt.Errorf("song directory check: %w", err))
+			}
+
+			if valid {
+				break
+			}
+
+			// XXX: Try checking the directory again, but with Songs/ appended.
+			// Just in case someone tries to only put the NotITG folder path
+			SongsPath = filepath.Join(SongsPath, "Songs")
+			valid, err = IsValidSongDirectory(SongsPath)
+			if valid {
+				break
+			}
+
+			fmt.Println("[Cache] It seems like the songs path provided is invalid!")
+			SongsPath = utils.GetTextInput("Insert your NotITG's Song folder path", 0)
+		}
+
 		if err := ScanSongFolder(db, SongsPath); err != nil {
 			panic(fmt.Errorf("song folder scan: %w", err))
 		}

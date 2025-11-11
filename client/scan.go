@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"hash"
 	"io/fs"
@@ -69,7 +70,9 @@ func ScanSongFolder(db *bolt.DB, folder string) error {
 		}
 
 		for _, song := range songs {
-			if !song.IsDir() {
+			p := filepath.Join(folder, pack.Name(), song.Name())
+
+			if !song.IsDir() || !HasSMFile(p) {
 				// fmt.Printf("%s is not a song folder, ignoring...\n", pack.Name())
 				continue
 			}
@@ -78,7 +81,6 @@ func ScanSongFolder(db *bolt.DB, folder string) error {
 			}
 
 			key := fmt.Sprintf("%s/%s", pack.Name(), song.Name())
-			p := filepath.Join(folder, pack.Name(), song.Name())
 
 			hash, err := HashSongFolder(p)
 			if err != nil {
@@ -112,6 +114,68 @@ func ScanSongFolder(db *bolt.DB, folder string) error {
 	return nil
 }
 
+func IsValidSongDirectory(dir string) (bool, error) {
+	// Check if we have a "pack" folder
+	packs, err := os.ReadDir(dir)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	var pack string
+	for _, p := range packs {
+		if !p.IsDir() {
+			continue
+		}
+
+		pack = p.Name()
+		break
+	}
+	if pack == "" {
+		return false, nil
+	}
+
+	files, err := os.ReadDir(filepath.Join(dir, pack))
+	if err != nil {
+		return false, err
+	}
+
+	for _, f := range files {
+		if !f.IsDir() {
+			continue
+		}
+
+		if !HasSMFile(filepath.Join(dir, pack, f.Name())) {
+			continue
+		}
+
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func HasSMFile(dir string) bool {
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		return false
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+
+		if filepath.Ext(file.Name()) == ".sm" {
+			return true
+		}
+	}
+
+	return false
+}
 func CanHashExtension(ext string) bool {
 	return ext == ".xml" ||
 		ext == ".lua" ||
