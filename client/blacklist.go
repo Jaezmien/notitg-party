@@ -1,23 +1,14 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"os"
 
+	"git.jaezmien.com/Jaezmien/notitg-party/client/internal/utils"
 	"gopkg.in/ini.v1"
 )
 
 func CheckBlacklist() (bool, error) {
-	_, err := os.Stat(BlacklistPath)
-	if err != nil {
-		if !errors.Is(err, os.ErrNotExist) {
-			return false, err
-		}
-
-		return false, nil
-	}
-	return true, nil
+	return utils.FileExists(BlacklistPath)
 }
 
 var (
