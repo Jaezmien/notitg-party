@@ -13,6 +13,9 @@ import (
 type ClientState int
 
 var ClientScoreThrottleMS = time.Duration(time.Second * 1).Milliseconds()
+var clientWriteWait = time.Second * 10
+var clientPongWait = time.Second * 60
+var clientPingPeriod = (clientPongWait * 9) / 10
 
 const (
 	CLIENT_IDLE ClientState = iota
@@ -70,21 +73,47 @@ func (c *Client) SetNewState(state ClientState) {
 }
 
 func (c *Client) Write() {
-	for message := range c.Send {
-		w, err := c.Connection.NextWriter(websocket.TextMessage)
-		if err != nil {
-			return
-		}
+	ticker := time.NewTicker(clientPingPeriod)
+	defer func() {
+		ticker.Stop()
+		c.Close()
+	}()
 
-		logger.Debug("sending data to client", slog.String("id", c.UUID), slog.String("data", string(message)))
-		w.Write(message)
+	for {
+		select {
+		case message, ok := <-c.Send:
+			c.Connection.SetWriteDeadline(time.Now().Add(clientWriteWait))
+			if !ok {
+				c.Connection.WriteMessage(websocket.CloseMessage, []byte{})
+				return
+			}
 
-		if err := w.Close(); err != nil {
-			return
+			w, err := c.Connection.NextWriter(websocket.TextMessage)
+			if err != nil {
+				return
+			}
+
+			logger.Debug("sending data to client", slog.String("id", c.UUID), slog.String("data", string(message)))
+			w.Write(message)
+
+			if err := w.Close(); err != nil {
+				return
+			}
+		case <-ticker.C:
+			c.Connection.SetWriteDeadline(time.Now().Add(clientWriteWait))
+			if err := c.Connection.WriteMessage(websocket.PingMessage, nil); err != nil {
+				return
+			}
 		}
 	}
 }
 func (c *Client) Read() {
+	c.Connection.SetReadDeadline(time.Now().Add(clientPongWait))
+	c.Connection.SetPongHandler(func(appData string) error {
+		c.Connection.SetReadDeadline(time.Now().Add(clientPongWait))
+		return nil
+	})
+
 	for {
 		t, message, err := c.Connection.ReadMessage()
 

@@ -26,6 +26,15 @@ func NewRoomConnection(con *websocket.Conn, instance *LemonInstance) *RoomConnec
 }
 
 func (m *RoomConnection) Read() {
+	defer func() {
+		if m.Closed {
+			return
+		}
+
+		m.Connection.Close()
+		m.Instance.AttemptClose()
+	}()
+
 	for {
 		t, message, err := m.Connection.ReadMessage()
 
@@ -39,9 +48,14 @@ func (m *RoomConnection) Read() {
 			} else {
 				m.Instance.Logger.Debug("websocket read error", slog.Any("error", err))
 			}
-			m.Connection.Close()
-			m.Instance.AttemptClose()
 			return
+		}
+
+		if t == websocket.PingMessage {
+			if err := m.Connection.WriteMessage(websocket.PongMessage, []byte{}); err != nil {
+				return
+			}
+			continue
 		}
 
 		if t != websocket.TextMessage {
