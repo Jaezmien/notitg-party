@@ -61,9 +61,9 @@ $ go run . --username="Your Username" --server="http://your.server:8080"
 | `deep` | No | `false` | Scans for NotITG by forcefully reading every program's memory |
 | `pid` | No | `0` | Use a specific process |
 | `verbose` | No | `false` | Enable debug messages |
-| `hash` | Once | `""` | When provided with the directory to 'Songs/', will scan every song in the folder |
+| `hash` | No | `""` | When provided with the directory to 'Songs/', will scan every song in the folder |
 | `server` | Maybe | `http://localhost:8080` | The server to connect to |
-| `username` | Yes | `""` | Your username |
+| `username` | No | `""` | Your username |
 | `version` | No | `false` | Print version and exit |
 
 # Theme
