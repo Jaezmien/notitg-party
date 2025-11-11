@@ -57,7 +57,7 @@ func ScanSongFolder(db *bolt.DB, folder string) error {
 
 	for _, pack := range packs {
 		if !pack.IsDir() {
-			// fmt.Printf("%s is not a pack folder, ignoring...\n", pack.Name())
+			slog.Warn("folder is not a pack folder, ignoring...", slog.String("folder", pack.Name()))
 			continue
 		}
 		if BlacklistedSongFolders[pack.Name()] {
@@ -73,7 +73,7 @@ func ScanSongFolder(db *bolt.DB, folder string) error {
 			p := filepath.Join(folder, pack.Name(), song.Name())
 
 			if !song.IsDir() || !HasSMFile(p) {
-				// fmt.Printf("%s is not a song folder, ignoring...\n", pack.Name())
+				slog.Warn("folder is not a song folder, ignoring...", slog.String("folder", song.Name()))
 				continue
 			}
 			if BlacklistedSongFiles[pack.Name()] {
@@ -103,14 +103,15 @@ func ScanSongFolder(db *bolt.DB, folder string) error {
 			}
 
 			if Verbose {
-				fmt.Printf("hashed %s as %s!\n", key, hash)
+				slog.Info("hashed file", slog.String("key", key), slog.String("hash", string(hash)))
 			} else {
-				fmt.Printf("hashed %s!\n", key)
+				slog.Info("hashed file", slog.String("key", key))
 			}
 		}
 	}
 
 	slog.Info("scanned song folder!")
+	fmt.Println()
 	return nil
 }
 
