@@ -426,7 +426,8 @@
 				sound:volume(vol)
 
 				if p >= ma then
-					sound:SetSoundPosition(mi)
+					sound:Stop()
+					sound:Play()
 					self:sleep(1.0)
 				end
 			end
@@ -441,9 +442,10 @@
 
 			self:stop()
 			self:load( song:GetMusicPath() )
-			self:start()
 			self:get():volume(0)
-			self:get():SetSoundPosition( song:GetSampleStartSeconds() )
+			self:get():startsecond(song:GetSampleStartSeconds())
+			self:get():stopmode('loop')
+			self:get():Play()
 
 			self:aux(1)
 		end"
