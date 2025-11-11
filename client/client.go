@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"git.jaezmien.com/Jaezmien/notitg-party/client/events"
+	"git.jaezmien.com/Jaezmien/notitg-party/client/internal/utils"
 	lemonade "github.com/Jaezmien/notitg-lemonade-go"
 	bolt "go.etcd.io/bbolt"
 )
@@ -128,12 +129,6 @@ func init() {
 }
 
 func init() {
-	if strings.TrimSpace(Username) == "" {
-		fmt.Println("username is required!")
-		fmt.Println("provide it using `--username`")
-		os.Exit(1)
-	}
-
 	if runtime.GOOS == "linux" && os.Geteuid() != 0 {
 		fmt.Println("this program needs to run as root!")
 		fmt.Println("use `sudo` or other alternatives.")
@@ -142,6 +137,10 @@ func init() {
 }
 
 func main() {
+	for strings.TrimSpace(Username) == "" {
+		Username = strings.TrimSpace(utils.GetTextInput("Insert your username"))
+	}
+
 	instance := NewLemonInstance(AppID)
 	defer instance.Close()
 
